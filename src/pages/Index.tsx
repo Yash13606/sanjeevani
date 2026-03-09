@@ -3,6 +3,7 @@ import HeroSection from "@/components/landing/HeroSection";
 import TrustedBySection from "@/components/landing/TrustedBySection";
 import FeatureShowcase from "@/components/landing/FeatureShowcase";
 import AICopilotSection from "@/components/landing/AICopilotSection";
+import LiveAlertsSection from "@/components/landing/LiveAlertsSection";
 import DarkSection from "@/components/landing/DarkSection";
 import TrustSection from "@/components/landing/TrustSection";
 import CTABanner from "@/components/landing/CTABanner";
