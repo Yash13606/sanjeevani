@@ -97,6 +97,23 @@ const riskStyles: Record<string, { strip: string; badge: string; badgeText: stri
   },
 };
 
+const container = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+};
+
+const cardVariant = {
+  hidden: { opacity: 0, y: 30, scale: 0.96 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+  },
+};
+
 const LiveAlertsSection = () => {
   return (
     <section id="alerts" className="py-20" style={{ backgroundColor: "#F0F7F4" }}>
@@ -133,24 +150,25 @@ const LiveAlertsSection = () => {
         </motion.div>
 
         {/* Alert Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
-          {alerts.map((alert, i) => {
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10"
+        >
+          {alerts.map((alert) => {
             const style = riskStyles[alert.riskKey];
             return (
               <motion.div
                 key={alert.location}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-40px" }}
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  visible: {
-                    opacity: 1,
-                    y: 0,
-                    transition: { delay: i * 0.08, duration: 0.5, ease: "easeOut" as const },
-                  },
+                variants={cardVariant}
+                whileHover={{
+                  y: -8,
+                  boxShadow: "0 20px 40px -12px rgba(0,0,0,0.12)",
                 }}
-                className="group rounded-xl bg-card border border-border overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className="group rounded-xl bg-card border border-border overflow-hidden shadow-sm cursor-pointer"
               >
                 {/* Top strip */}
                 <div className={`h-1 ${style.strip}`} />
@@ -202,22 +220,24 @@ const LiveAlertsSection = () => {
               </motion.div>
             );
           })}
-        </div>
+        </motion.div>
 
         {/* View All button */}
         <motion.div
-          initial="hidden"
-          whileInView="visible"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          variants={fadeUp}
+          transition={{ duration: 0.5, delay: 0.3 }}
           className="text-center"
         >
-          <Button
-            variant="outline"
-            className="rounded-full px-6 border-primary text-primary hover:bg-primary/5 font-semibold"
-          >
-            View All Alerts <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} className="inline-block">
+            <Button
+              variant="outline"
+              className="rounded-full px-6 border-primary text-primary hover:bg-primary/5 font-semibold"
+            >
+              View All Alerts <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </motion.div>
         </motion.div>
       </div>
     </section>
