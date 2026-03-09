@@ -134,14 +134,6 @@ const HeroSection = () => {
             className="relative hidden lg:block"
           >
             <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/10 border border-border bg-card">
-              <div className="flex items-center gap-2 px-4 py-3 bg-muted/50 border-b border-border">
-                <div className="w-3 h-3 rounded-full bg-destructive/60" />
-                <div className="w-3 h-3 rounded-full bg-alert-orange/60" />
-                <div className="w-3 h-3 rounded-full bg-alert-green/60" />
-                <span className="ml-3 text-xs text-muted-foreground font-mono">
-                  sanjeevani.app/dashboard
-                </span>
-              </div>
               <img
                 src="/images/hero-visual.png"
                 alt="Sanjeevani Dashboard Preview showing heatmap and alerts"
