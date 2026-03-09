@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 
 const navLinks = [
   { label: "Home", href: "#home" },
+  { label: "How It Works", href: "#how-it-works" },
+  { label: "Alerts", href: "#alerts" },
   { label: "About", href: "#about" },
-  { label: "How It Works", href: "#features" },
-  { label: "Alerts", href: "#trust" },
   { label: "Contact", href: "#contact" },
 ];
 
@@ -16,24 +16,36 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 80);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    setMobileOpen(false);
+    const id = href.replace("#", "");
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    } else if (href === "#home") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   return (
     <>
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? "glass-nav bg-white/80 shadow-sm border-b border-border/50"
+            ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-border/50"
             : "bg-transparent"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
-            <a href="#home" className="flex items-center gap-2.5 group">
+            <a href="#home" onClick={(e) => handleClick(e, "#home")} className="flex items-center gap-2.5 group">
               <div className="relative w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
                 <Droplets className="w-5 h-5 text-primary-foreground" />
               </div>
@@ -48,6 +60,7 @@ const Navbar = () => {
                 <a
                   key={link.label}
                   href={link.href}
+                  onClick={(e) => handleClick(e, link.href)}
                   className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 rounded-md"
                 >
                   {link.label}
@@ -56,8 +69,11 @@ const Navbar = () => {
             </div>
 
             {/* Desktop CTA — right */}
-            <div className="hidden lg:flex items-center">
-              <Button className="bg-foreground text-background hover:bg-foreground/90 text-sm font-semibold px-6 rounded-full">
+            <div className="hidden lg:flex items-center gap-3">
+              <Button variant="outline" className="text-sm font-medium px-5 rounded-full border-border text-foreground hover:bg-muted">
+                Login
+              </Button>
+              <Button className="text-sm font-semibold px-6 rounded-full text-white" style={{ background: "#12201A" }}>
                 Get Started
               </Button>
             </div>
@@ -88,14 +104,15 @@ const Navbar = () => {
                 <a
                   key={link.label}
                   href={link.href}
-                  onClick={() => setMobileOpen(false)}
+                  onClick={(e) => handleClick(e, link.href)}
                   className="py-3 text-lg font-medium text-foreground border-b border-border"
                 >
                   {link.label}
                 </a>
               ))}
-              <div className="mt-6">
-                <Button className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-full">
+              <div className="mt-6 space-y-3">
+                <Button variant="outline" className="w-full rounded-full">Login</Button>
+                <Button className="w-full rounded-full text-white" style={{ background: "#12201A" }}>
                   Get Started
                 </Button>
               </div>

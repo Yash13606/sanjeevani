@@ -2,8 +2,6 @@ import Navbar from "@/components/landing/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
 import TrustedBySection from "@/components/landing/TrustedBySection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
-import FeatureShowcase from "@/components/landing/FeatureShowcase";
-import AICopilotSection from "@/components/landing/AICopilotSection";
 import LiveAlertsSection from "@/components/landing/LiveAlertsSection";
 import DarkSection from "@/components/landing/DarkSection";
 import TrustSection from "@/components/landing/TrustSection";
@@ -13,14 +11,12 @@ import Footer from "@/components/landing/Footer";
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen scroll-smooth">
       <Navbar />
       <main>
         <HeroSection />
         <TrustedBySection />
         <HowItWorksSection />
-        <FeatureShowcase />
-        <AICopilotSection />
         <LiveAlertsSection />
         <DarkSection />
         <TrustSection />
