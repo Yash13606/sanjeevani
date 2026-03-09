@@ -30,16 +30,16 @@ const ContactSection = () => {
               <p className="text-xs font-bold tracking-[0.2em] uppercase text-primary mb-3">
                 Get in Touch
               </p>
-              <h2 className="font-display text-2xl sm:text-3xl lg:text-[34px] font-bold text-foreground leading-tight mb-2">
+              <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground leading-tight mb-1.5">
                 Bring Sanjeevani to your district
               </h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Reach out to deploy the system in your region or partner with our team.
               </p>
             </div>
 
             {/* Form */}
-            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-foreground mb-1.5">Name</label>
