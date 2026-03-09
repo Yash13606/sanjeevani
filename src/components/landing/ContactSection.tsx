@@ -24,9 +24,9 @@ const ContactSection = () => {
           variants={fadeUp}
           className="rounded-2xl bg-card shadow-xl border border-border/40 overflow-hidden"
         >
-          <div className="p-6 sm:p-10">
+          <div className="p-5 sm:p-7">
             {/* Header */}
-            <div className="text-center mb-8">
+            <div className="text-center mb-5">
               <p className="text-xs font-bold tracking-[0.2em] uppercase text-primary mb-3">
                 Get in Touch
               </p>
