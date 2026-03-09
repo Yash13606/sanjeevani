@@ -124,29 +124,6 @@ const HeroSection = () => {
               ))}
             </motion.div>
           </div>
-
-          {/* Right — Dashboard mockup */}
-          <motion.div
-            custom={2}
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            className="relative hidden lg:block"
-          >
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/10 border border-border bg-card">
-              <img
-                src="/images/hero-visual.png"
-                alt="Sanjeevani Dashboard Preview showing heatmap and alerts"
-                className="w-full h-auto"
-                loading="eager"
-              />
-            </div>
-            {/* Glow beneath */}
-            <div
-              className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-3/4 h-16 rounded-full opacity-30 blur-2xl"
-              style={{ background: "hsl(161, 68%, 51%)" }}
-            />
-          </motion.div>
         </div>
       </div>
     </section>
