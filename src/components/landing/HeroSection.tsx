@@ -96,7 +96,7 @@ const HeroSection = () => {
           </div>
 
           {/* Dashboard body */}
-          <div className="flex min-h-[320px]">
+          <div className="flex min-h-[420px]">
             {/* LEFT: Sidebar */}
             <div className="hidden sm:flex flex-col w-[140px] shrink-0 py-4 px-2 gap-1" style={{ background: "#1A3D2B" }}>
               <div className="flex items-center gap-2 px-2 mb-4">
