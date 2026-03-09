@@ -15,8 +15,8 @@ const trustSignals = [
 
 const ContactSection = () => {
   return (
-    <section id="contact" className="py-20 lg:py-28 bg-background">
-      <div className="max-w-[680px] mx-auto px-4 sm:px-6">
+    <section id="contact" className="py-12 lg:py-16 bg-background">
+      <div className="max-w-[520px] mx-auto px-4 sm:px-6">
         <motion.div
           initial="hidden"
           whileInView="visible"
