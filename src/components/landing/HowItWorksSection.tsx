@@ -161,7 +161,7 @@ const steps = [
 
 const HowItWorksSection = () => {
   return (
-    <section className="bg-white py-24 md:py-32">
+    <section id="how-it-works" className="bg-white py-20 lg:py-20">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <motion.div
