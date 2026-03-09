@@ -34,13 +34,21 @@ const features = [
   },
 ];
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i: number) => ({
+const container = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.1, delayChildren: 0.15 },
+  },
+};
+
+const cardVariant = {
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  visible: {
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.08, duration: 0.5, ease: "easeOut" as const },
-  }),
+    scale: 1,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+  },
 };
 
 const TrustSection = () => {
@@ -48,13 +56,10 @@ const TrustSection = () => {
     <section id="trust" className="py-20" style={{ backgroundColor: "hsl(60, 20%, 98%)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={{
-            hidden: { opacity: 0, y: 24 },
-            visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-          }}
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6 }}
           className="text-center max-w-3xl mx-auto mb-16"
         >
           <h2 className="font-display text-3xl sm:text-4xl lg:text-[44px] font-bold text-foreground mb-4 leading-tight">
@@ -66,20 +71,32 @@ const TrustSection = () => {
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((f, i) => (
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {features.map((f) => (
             <motion.div
               key={f.title}
-              custom={i}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeUp}
-              className="group p-6 rounded-2xl bg-card border border-border hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+              variants={cardVariant}
+              whileHover={{
+                y: -6,
+                boxShadow: "0 20px 40px -12px rgba(0,0,0,0.1)",
+                borderColor: "hsl(156, 61%, 26%, 0.3)",
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="group p-6 rounded-2xl bg-card border border-border transition-all duration-300"
             >
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
+              <motion.div
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors"
+              >
                 <f.icon className="w-6 h-6 text-primary" />
-              </div>
+              </motion.div>
               <h3 className="font-display text-lg font-bold text-foreground mb-2">
                 {f.title}
               </h3>
@@ -88,7 +105,7 @@ const TrustSection = () => {
               </p>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
