@@ -40,7 +40,7 @@ const ContactSection = () => {
 
             {/* Form */}
             <form className="space-y-2.5" onSubmit={(e) => e.preventDefault()}>
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
                   <label className="block text-[11px] font-medium text-foreground mb-0.5">Name</label>
                   <input type="text" placeholder="Your full name"
@@ -51,6 +51,9 @@ const ContactSection = () => {
                   <input type="text" placeholder="District Health Office"
                     className="w-full h-8 px-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
                   <label className="block text-[11px] font-medium text-foreground mb-0.5">Email</label>
                   <input type="email" placeholder="you@example.com"
@@ -71,7 +74,7 @@ const ContactSection = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2.5 items-end">
+              <div className="grid grid-cols-[1fr_auto] gap-2.5 items-end">
                 <div>
                   <label className="block text-[11px] font-medium text-foreground mb-0.5">Message</label>
                   <input type="text" placeholder="Tell us about your district…"
