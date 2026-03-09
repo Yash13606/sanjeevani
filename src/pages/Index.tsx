@@ -18,6 +18,7 @@ const Index = () => {
       <main>
         <HeroSection />
         <TrustedBySection />
+        <HowItWorksSection />
         <FeatureShowcase />
         <AICopilotSection />
         <LiveAlertsSection />
