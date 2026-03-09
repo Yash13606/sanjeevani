@@ -10,7 +10,7 @@ const partners = [
 
 const TrustedBySection = () => {
   return (
-    <section className="pt-20 lg:pt-24 pb-10 bg-section-white border-y border-border">
+    <section className="pt-40 lg:pt-56 pb-10 bg-section-white border-y border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <p className="text-center text-xs font-body uppercase tracking-[0.2em] text-muted-foreground mb-8">
           Deployed In
