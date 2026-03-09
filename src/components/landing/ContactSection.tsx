@@ -84,8 +84,7 @@ const ContactSection = () => {
               </Button>
             </form>
 
-            {/* Trust signals */}
-            <div className="mt-6 pt-6 border-t border-border flex flex-wrap items-center justify-center gap-6">
+            <div className="mt-4 pt-4 border-t border-border flex flex-wrap items-center justify-center gap-5">
               {trustSignals.map((s) => (
                 <div key={s.label} className="flex items-center gap-2 text-xs text-muted-foreground">
                   <s.icon className="w-3.5 h-3.5 text-primary" />
