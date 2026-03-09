@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Droplets, ChevronRight } from "lucide-react";
+import { Menu, X, Droplets } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navLinks = [
@@ -26,7 +26,7 @@ const Navbar = () => {
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? "glass-nav bg-section-white/80 shadow-sm border-b border-border"
+            ? "glass-nav bg-white/80 shadow-sm border-b border-border/50"
             : "bg-transparent"
         }`}
       >
@@ -37,37 +37,28 @@ const Navbar = () => {
               <div className="relative w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
                 <Droplets className="w-5 h-5 text-primary-foreground" />
               </div>
-              <div className="flex flex-col">
-                <span className="font-display text-lg font-bold leading-tight text-foreground">
-                  Sanjeevani
-                </span>
-                <span className="text-[10px] font-body uppercase tracking-[0.15em] text-muted-foreground leading-none">
-                  Community Health AI
-                </span>
-              </div>
+              <span className="font-display text-lg font-bold leading-tight text-foreground">
+                Sanjeevani
+              </span>
             </a>
 
-            {/* Desktop links */}
+            {/* Desktop links — center */}
             <div className="hidden lg:flex items-center gap-1">
               {navLinks.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
-                  className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 rounded-md hover:bg-muted/50"
+                  className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 rounded-md"
                 >
                   {link.label}
                 </a>
               ))}
             </div>
 
-            {/* Desktop CTA */}
-            <div className="hidden lg:flex items-center gap-3">
-              <Button variant="ghost" className="text-sm font-medium">
-                Login
-              </Button>
-              <Button className="bg-accent text-accent-foreground hover:bg-accent/90 text-sm font-semibold px-5">
+            {/* Desktop CTA — right */}
+            <div className="hidden lg:flex items-center">
+              <Button className="bg-foreground text-background hover:bg-foreground/90 text-sm font-semibold px-6 rounded-full">
                 Get Started
-                <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
 
@@ -90,7 +81,7 @@ const Navbar = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-section-white pt-20 px-6 lg:hidden"
+            className="fixed inset-0 z-40 bg-white pt-20 px-6 lg:hidden"
           >
             <div className="flex flex-col gap-2">
               {navLinks.map((link) => (
@@ -103,9 +94,8 @@ const Navbar = () => {
                   {link.label}
                 </a>
               ))}
-              <div className="flex flex-col gap-3 mt-6">
-                <Button variant="outline" className="w-full">Login</Button>
-                <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
+              <div className="mt-6">
+                <Button className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-full">
                   Get Started
                 </Button>
               </div>
