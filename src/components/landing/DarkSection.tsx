@@ -10,7 +10,7 @@ const DarkSection = () => {
   return (
     <section
       id="about"
-      className="relative py-20 lg:py-28 overflow-hidden"
+      className="relative py-20 overflow-hidden"
       style={{ backgroundColor: "hsl(163, 41%, 9%)" }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

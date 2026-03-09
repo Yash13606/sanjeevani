@@ -99,7 +99,7 @@ const riskStyles: Record<string, { strip: string; badge: string; badgeText: stri
 
 const LiveAlertsSection = () => {
   return (
-    <section className="py-20 lg:py-28" style={{ backgroundColor: "#F0F7F4" }}>
+    <section id="alerts" className="py-20" style={{ backgroundColor: "#F0F7F4" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div

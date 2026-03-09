@@ -45,7 +45,7 @@ const fadeUp = {
 
 const TrustSection = () => {
   return (
-    <section id="trust" className="py-20 lg:py-28" style={{ backgroundColor: "hsl(60, 20%, 98%)" }}>
+    <section id="trust" className="py-20" style={{ backgroundColor: "hsl(60, 20%, 98%)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
