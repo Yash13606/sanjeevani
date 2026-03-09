@@ -216,25 +216,49 @@ const HowItWorksSection = () => {
 
             return (
               <div key={step.num}>
-                <motion.div
-                  className={`grid md:grid-cols-2 gap-12 md:gap-16 items-center py-16 md:py-20`}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-80px" }}
-                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
-                >
+                <div className={`grid md:grid-cols-2 gap-12 md:gap-16 items-center py-16 md:py-20`}>
                   {step.textLeft ? (
                     <>
-                      {textBlock}
-                      {visualBlock}
+                      <motion.div
+                        initial={{ opacity: 0, x: -30 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true, margin: "-80px" }}
+                        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
+                      >
+                        {textBlock}
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, x: 30 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true, margin: "-80px" }}
+                        transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] as const }}
+                      >
+                        {visualBlock}
+                      </motion.div>
                     </>
                   ) : (
                     <>
-                      <div className="order-2 md:order-1">{visualBlock}</div>
-                      <div className="order-1 md:order-2">{textBlock}</div>
+                      <motion.div
+                        className="order-2 md:order-1"
+                        initial={{ opacity: 0, x: -30 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true, margin: "-80px" }}
+                        transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] as const }}
+                      >
+                        {visualBlock}
+                      </motion.div>
+                      <motion.div
+                        className="order-1 md:order-2"
+                        initial={{ opacity: 0, x: 30 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true, margin: "-80px" }}
+                        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
+                      >
+                        {textBlock}
+                      </motion.div>
                     </>
                   )}
-                </motion.div>
+                </div>
                 {i < steps.length - 1 && (
                   <div className="border-t" style={{ borderColor: "#EAEAEA" }} />
                 )}
