@@ -1,6 +1,7 @@
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Play, Map, AlertTriangle, MessageCircle, BarChart3, LayoutDashboard, Bell, FileText, User, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRef } from "react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -27,28 +28,45 @@ const alertCards = [
 ];
 
 const HeroSection = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
+  const dashboardY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+
   return (
     <section
+      ref={sectionRef}
       id="home"
       className="relative min-h-screen flex flex-col overflow-hidden"
     >
-      {/* Background landscape image */}
-      <div className="absolute inset-0 z-0">
+      {/* Background landscape image with parallax */}
+      <motion.div className="absolute inset-0 z-0" style={{ y: bgY }}>
         <img
           src="/images/hero-landscape.jpg"
           alt=""
-          className="w-full h-full object-cover"
+          className="w-full h-[120%] object-cover"
           loading="eager"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/20 to-transparent" />
-      </div>
+      </motion.div>
 
-      {/* Content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-28 pb-8">
+      {/* Content with fade on scroll */}
+      <motion.div
+        style={{ opacity: contentOpacity }}
+        className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-28 pb-8"
+      >
         <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible" className="mb-8">
-          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/80 glass-nav border border-border/50 text-foreground text-sm font-medium shadow-sm">
+          <motion.span
+            whileHover={{ scale: 1.05 }}
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/80 glass-nav border border-border/50 text-foreground text-sm font-medium shadow-sm cursor-default"
+          >
             AI-Powered Early Warning System 🌿
-          </span>
+          </motion.span>
         </motion.div>
 
         <motion.h1
@@ -68,21 +86,33 @@ const HeroSection = () => {
         </motion.p>
 
         <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible" className="mt-8 flex items-center gap-4">
-          <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90 text-base font-semibold px-8 h-12 rounded-full shadow-lg">
-            Get Started
-          </Button>
-          <button className="w-12 h-12 rounded-full bg-foreground text-background flex items-center justify-center hover:bg-foreground/90 transition-colors shadow-lg" aria-label="Watch demo">
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+            <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90 text-base font-semibold px-8 h-12 rounded-full shadow-lg">
+              Get Started
+            </Button>
+          </motion.div>
+          <motion.button
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-12 h-12 rounded-full bg-foreground text-background flex items-center justify-center shadow-lg"
+            aria-label="Watch demo"
+          >
             <Play className="w-5 h-5 ml-0.5" />
-          </button>
+          </motion.button>
         </motion.div>
-      </div>
+      </motion.div>
 
-      {/* Floating dashboard mockup */}
+      {/* Floating dashboard mockup with parallax */}
       <motion.div
         custom={4} variants={fadeUp} initial="hidden" animate="visible"
+        style={{ y: dashboardY }}
         className="relative z-10 w-[90%] max-w-[900px] mx-auto -mb-32 lg:-mb-48"
       >
-        <div className="rounded-2xl overflow-hidden shadow-[0_25px_60px_-12px_rgba(0,0,0,0.25)] border border-border/40 bg-card">
+        <motion.div
+          whileHover={{ y: -4, boxShadow: "0 35px 70px -15px rgba(0,0,0,0.3)" }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="rounded-2xl overflow-hidden shadow-[0_25px_60px_-12px_rgba(0,0,0,0.25)] border border-border/40 bg-card"
+        >
           {/* Browser chrome */}
           <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/60 border-b border-border">
             <div className="w-3 h-3 rounded-full bg-[hsl(1,77%,55%)]" />
@@ -182,7 +212,7 @@ const HeroSection = () => {
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Bottom fade */}
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent rounded-b-2xl pointer-events-none" />
