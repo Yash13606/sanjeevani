@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Play, Hospital, Droplets, Bot, BarChart3, Smartphone, MapPin } from "lucide-react";
+import { Play, Map, AlertTriangle, MessageCircle, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const fadeUp = {
@@ -11,94 +11,36 @@ const fadeUp = {
   }),
 };
 
-const floatingIcons = [
-  { icon: BarChart3, top: "22%", left: "18%", rotate: -6, delay: 0 },
-  { icon: Hospital, top: "12%", left: "32%", rotate: 4, delay: 0.4 },
-  { icon: Droplets, top: "8%", left: "48%", rotate: -2, delay: 0.8 },
-  { icon: Bot, top: "12%", left: "64%", rotate: 5, delay: 1.2 },
-  { icon: Smartphone, top: "22%", left: "78%", rotate: -8, delay: 1.6 },
-  { icon: MapPin, top: "30%", left: "24%", rotate: 7, delay: 2 },
-];
-
 const HeroSection = () => {
   return (
     <section
       id="home"
       className="relative min-h-screen flex flex-col overflow-hidden"
-      style={{
-        background: `
-          linear-gradient(to bottom, transparent 0%, rgba(34,85,34,0.08) 70%, rgba(20,60,20,0.25) 100%),
-          linear-gradient(to bottom, #FAFAFA 0%, #EEF6F2 40%, #C5DDD5 65%, #4A7C59 85%, #2D5A3D 100%)
-        `,
-      }}
     >
-      {/* SVG Tree silhouettes at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 z-[1] pointer-events-none">
-        <svg viewBox="0 0 1440 320" className="w-full h-auto block" preserveAspectRatio="none">
-          {/* Far treeline */}
-          <path
-            d="M0,280 Q60,200 120,240 Q180,180 240,220 Q300,160 360,200 Q420,140 480,190 Q540,130 600,180 Q660,120 720,170 Q780,110 840,160 Q900,100 960,150 Q1020,90 1080,140 Q1140,80 1200,130 Q1260,70 1320,120 Q1380,60 1440,100 L1440,320 L0,320 Z"
-            fill="hsl(156, 40%, 22%)"
-            opacity="0.6"
-          />
-          {/* Mid treeline */}
-          <path
-            d="M0,300 Q80,230 160,260 Q240,210 320,250 Q400,190 480,230 Q560,180 640,220 Q720,170 800,210 Q880,160 960,200 Q1040,150 1120,190 Q1200,140 1280,180 Q1360,120 1440,160 L1440,320 L0,320 Z"
-            fill="hsl(156, 45%, 18%)"
-            opacity="0.75"
-          />
-          {/* Front treeline */}
-          <path
-            d="M0,310 Q100,260 200,280 Q300,240 400,270 Q500,230 600,260 Q700,220 800,250 Q900,210 1000,240 Q1100,200 1200,230 Q1300,190 1440,220 L1440,320 L0,320 Z"
-            fill="hsl(163, 41%, 9%)"
-            opacity="0.9"
-          />
-          {/* Individual tree shapes */}
-          {[100, 300, 520, 750, 980, 1150, 1350].map((x, i) => (
-            <polygon
-              key={i}
-              points={`${x},${290 - (i % 3) * 15} ${x - 18},320 ${x + 18},320`}
-              fill="hsl(163, 41%, 9%)"
-              opacity={0.7 + (i % 3) * 0.1}
-            />
-          ))}
-        </svg>
+      {/* Background landscape image */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src="/images/hero-landscape.jpg"
+          alt=""
+          className="w-full h-full object-cover"
+          loading="eager"
+        />
+        {/* Subtle overlay to ensure text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/20 to-transparent" />
       </div>
 
-      {/* Floating Icon Halo */}
-      {floatingIcons.map(({ icon: Icon, top, left, rotate, delay }, idx) => (
-        <motion.div
-          key={idx}
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5 + delay * 0.3, duration: 0.6, ease: "easeOut" as const }}
-          className="absolute z-[5] hidden md:flex"
-          style={{ top, left }}
-        >
-          <div
-            className="w-14 h-14 lg:w-16 lg:h-16 rounded-xl bg-background flex items-center justify-center shadow-lg border border-border/30"
-            style={{
-              transform: `rotate(${rotate}deg)`,
-              animation: `floatBob 3s ease-in-out ${delay}s infinite`,
-            }}
-          >
-            <Icon className="w-6 h-6 lg:w-7 lg:h-7 text-primary" />
-          </div>
-        </motion.div>
-      ))}
-
       {/* Content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-[160px] pb-[200px]">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-28 pb-8">
         {/* Announcement badge */}
         <motion.div
           custom={0}
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="mb-5"
+          className="mb-8"
         >
-          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-background border border-border/60 text-foreground text-sm font-medium shadow-sm">
-            AI-Powered Early Warning 🌿
+          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/80 glass-nav border border-border/50 text-foreground text-sm font-medium shadow-sm">
+            AI-Powered Early Warning System 🌿
           </span>
         </motion.div>
 
@@ -108,8 +50,7 @@ const HeroSection = () => {
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-[80px] font-bold leading-[1.05] tracking-tight text-center max-w-5xl"
-          style={{ color: "#12201A" }}
+          className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-[80px] font-bold leading-[1.05] tracking-tight text-foreground text-center max-w-5xl"
         >
           Your Shield Against{" "}
           <br className="hidden sm:block" />
@@ -122,12 +63,10 @@ const HeroSection = () => {
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="mt-6 text-base sm:text-lg text-center max-w-[560px] leading-relaxed"
-          style={{ color: "#5A6E64" }}
+          className="mt-6 text-base sm:text-lg text-muted-foreground text-center max-w-2xl leading-relaxed"
         >
-          Sanjeevani integrates IoT water sensors, ASHA community reports,
-          and Random Forest AI to predict and prevent disease outbreaks
-          across Northeast India.
+          Empowering communities with intelligent, real-time surveillance tools
+          to detect outbreaks, enhance response, and protect lives — seamlessly.
         </motion.p>
 
         {/* CTAs */}
@@ -136,18 +75,16 @@ const HeroSection = () => {
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="mt-8 flex items-center gap-3"
+          className="mt-8 flex items-center gap-4"
         >
           <Button
             size="lg"
-            className="text-base font-semibold px-8 h-12 rounded-full shadow-lg"
-            style={{ backgroundColor: "#12201A", color: "#FFFFFF" }}
+            className="bg-foreground text-background hover:bg-foreground/90 text-base font-semibold px-8 h-12 rounded-full shadow-lg"
           >
             Get Started
           </Button>
           <button
-            className="w-12 h-12 rounded-full flex items-center justify-center transition-colors shadow-lg"
-            style={{ backgroundColor: "#12201A", color: "#FFFFFF" }}
+            className="w-12 h-12 rounded-full bg-foreground text-background flex items-center justify-center hover:bg-foreground/90 transition-colors shadow-lg"
             aria-label="Watch demo"
           >
             <Play className="w-5 h-5 ml-0.5" />
@@ -155,13 +92,99 @@ const HeroSection = () => {
         </motion.div>
       </div>
 
-      {/* Float animation keyframes */}
-      <style>{`
-        @keyframes floatBob {
-          0%, 100% { transform: translateY(0) rotate(var(--rotate, 0deg)); }
-          50% { transform: translateY(-12px) rotate(var(--rotate, 0deg)); }
-        }
-      `}</style>
+      {/* Floating dashboard mockup at bottom */}
+      <motion.div
+        custom={4}
+        variants={fadeUp}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 -mb-32 lg:-mb-48"
+      >
+        <div className="rounded-t-2xl lg:rounded-t-3xl overflow-hidden shadow-2xl shadow-foreground/10 border border-border/50 bg-card">
+          {/* Browser chrome */}
+          <div className="flex items-center gap-2 px-4 py-3 bg-muted/60 border-b border-border">
+            <div className="w-3 h-3 rounded-full bg-destructive/50" />
+            <div className="w-3 h-3 rounded-full bg-alert-orange/50" />
+            <div className="w-3 h-3 rounded-full bg-alert-green/50" />
+            <div className="ml-3 flex-1 max-w-xs">
+              <div className="h-6 rounded-md bg-muted flex items-center px-3">
+                <span className="text-[11px] text-muted-foreground font-mono">sanjeevani.app/dashboard</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Dashboard content mockup */}
+          <div className="p-4 sm:p-6 bg-card">
+            <div className="flex items-center gap-4 mb-5">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                  <span className="text-primary-foreground text-xs font-bold">S</span>
+                </div>
+                <span className="font-display text-sm font-bold text-foreground">Sanjeevani Dashboard</span>
+              </div>
+              <div className="ml-auto hidden sm:flex items-center gap-2">
+                <div className="h-7 px-3 rounded-md bg-primary text-primary-foreground text-xs font-medium flex items-center">Welcome, Priya</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+              {[
+                { label: "Districts Monitored", value: "12", icon: Map, color: "text-primary" },
+                { label: "Active Alerts", value: "7", icon: AlertTriangle, color: "text-destructive" },
+                { label: "Detection Rate", value: "97.3%", icon: BarChart3, color: "text-alert-green" },
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-xl border border-border p-4 bg-card">
+                  <div className="flex items-center gap-2 mb-2">
+                    <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                    <span className="text-xs text-muted-foreground">{stat.label}</span>
+                  </div>
+                  <p className={`font-mono text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+              {/* Mini heatmap */}
+              <div className="sm:col-span-3 rounded-xl border border-border p-4 bg-card">
+                <div className="flex items-center gap-2 mb-3">
+                  <Map className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-semibold text-foreground">Risk Heatmap — Guwahati Region</span>
+                </div>
+                <div className="grid grid-cols-8 gap-1.5">
+                  {Array.from({ length: 24 }).map((_, i) => {
+                    const levels = ["bg-alert-green/30", "bg-alert-green/50", "bg-alert-orange/40", "bg-destructive/30", "bg-alert-green/40", "bg-alert-orange/50"];
+                    return (
+                      <div key={i} className={`aspect-square rounded-sm ${levels[i % levels.length]}`} />
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Alert list */}
+              <div className="sm:col-span-2 rounded-xl border border-border p-4 bg-card">
+                <div className="flex items-center gap-2 mb-3">
+                  <AlertTriangle className="w-4 h-4 text-destructive" />
+                  <span className="text-xs font-semibold text-foreground">Active Alerts</span>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { title: "Cholera Risk — 781001", level: "High", color: "bg-destructive text-primary-foreground" },
+                    { title: "Turbidity Alert — 781005", level: "Medium", color: "bg-alert-orange text-primary-foreground" },
+                    { title: "Safe Zone — 781009", level: "Low", color: "bg-alert-green text-primary-foreground" },
+                  ].map((alert) => (
+                    <div key={alert.title} className="flex items-center gap-2 text-xs">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${alert.color}`}>
+                        {alert.level}
+                      </span>
+                      <span className="text-muted-foreground truncate">{alert.title}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </section>
   );
 };
