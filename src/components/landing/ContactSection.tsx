@@ -40,40 +40,30 @@ const ContactSection = () => {
 
             {/* Form */}
             <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-foreground mb-1.5">Name</label>
-                  <input
-                    type="text"
-                    placeholder="Your full name"
-                    className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-                  />
+                  <label className="block text-[11px] font-medium text-foreground mb-1">Name</label>
+                  <input type="text" placeholder="Your full name"
+                    className="w-full h-9 px-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-foreground mb-1.5">Organization</label>
-                  <input
-                    type="text"
-                    placeholder="District Health Office"
-                    className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-                  />
+                  <label className="block text-[11px] font-medium text-foreground mb-1">Organization</label>
+                  <input type="text" placeholder="District Health Office"
+                    className="w-full h-9 px-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-foreground mb-1.5">Email</label>
-                <input
-                  type="email"
-                  placeholder="you@example.com"
-                  className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-                />
+                <label className="block text-[11px] font-medium text-foreground mb-1">Email</label>
+                <input type="email" placeholder="you@example.com"
+                  className="w-full h-9 px-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-foreground mb-1.5">Role</label>
+                <label className="block text-[11px] font-medium text-foreground mb-1">Role</label>
                 <select
-                  className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors appearance-none"
-                  defaultValue=""
-                >
+                  className="w-full h-9 px-3 rounded-lg border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors appearance-none"
+                  defaultValue="">
                   <option value="" disabled>Select your role</option>
                   <option>District Health Officer</option>
                   <option>ASHA Coordinator</option>
@@ -84,19 +74,13 @@ const ContactSection = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-foreground mb-1.5">Message</label>
-                <textarea
-                  rows={4}
-                  placeholder="Tell us about your district and how we can help…"
-                  className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-none"
-                />
+                <label className="block text-[11px] font-medium text-foreground mb-1">Message</label>
+                <textarea rows={3} placeholder="Tell us about your district…"
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-none" />
               </div>
 
-              <Button
-                type="submit"
-                className="w-full h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-sm"
-              >
-                Send Message <ArrowRight className="w-4 h-4 ml-2" />
+              <Button type="submit" className="w-full h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs">
+                Send Message <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
               </Button>
             </form>
 
