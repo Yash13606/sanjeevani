@@ -3,24 +3,20 @@ import { Button } from "@/components/ui/button";
 
 const CTABanner = () => {
   return (
-    <section
-      id="contact"
-      className="px-4 sm:px-6 lg:px-10 pt-16 pb-4"
-      style={{ backgroundColor: "#F2F2F0" }}
-    >
+    <section className="px-4 sm:px-6 lg:px-10 pt-4 pb-4 bg-background">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6, ease: "easeOut" as const }}
         className="relative max-w-6xl mx-auto rounded-2xl overflow-hidden shadow-xl"
-        style={{ backgroundColor: "#0A0A0A" }}
+        style={{ backgroundColor: "hsl(var(--dark-surface))" }}
       >
-        {/* Radial glow at top center */}
+        {/* Radial glow */}
         <div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
           style={{
-            background: "radial-gradient(ellipse at center, rgba(60,60,60,0.5) 0%, transparent 70%)",
+            background: "radial-gradient(ellipse at center, hsla(161,40%,20%,0.4) 0%, transparent 70%)",
           }}
         />
 
@@ -28,14 +24,14 @@ const CTABanner = () => {
           <h2 className="font-display text-3xl sm:text-4xl lg:text-[40px] font-bold text-white mb-5 leading-tight max-w-2xl mx-auto">
             Protect your community before outbreaks strike
           </h2>
-          <p className="text-base max-w-xl mx-auto mb-8 leading-relaxed" style={{ color: "#A0A0A0" }}>
-            Sanjeevani uses AI and IoT sensors to uncover outbreak risks and deliver them to every health worker and citizen.
+          <p className="text-base max-w-xl mx-auto mb-8 leading-relaxed" style={{ color: "hsl(161,40%,60%)" }}>
+            AI + IoT + Community. The complete early warning system.
           </p>
           <Button
             size="lg"
             className="bg-white text-foreground hover:bg-white/90 text-sm font-semibold px-8 h-11 rounded-full shadow-lg"
           >
-            Get Started
+            Get Started Free
           </Button>
         </div>
       </motion.div>
