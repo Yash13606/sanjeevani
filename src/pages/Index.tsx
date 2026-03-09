@@ -6,6 +6,7 @@ import AICopilotSection from "@/components/landing/AICopilotSection";
 import LiveAlertsSection from "@/components/landing/LiveAlertsSection";
 import DarkSection from "@/components/landing/DarkSection";
 import TrustSection from "@/components/landing/TrustSection";
+import ContactSection from "@/components/landing/ContactSection";
 import CTABanner from "@/components/landing/CTABanner";
 import Footer from "@/components/landing/Footer";
 
@@ -21,6 +22,7 @@ const Index = () => {
         <LiveAlertsSection />
         <DarkSection />
         <TrustSection />
+        <ContactSection />
         <CTABanner />
       </main>
       <Footer />
