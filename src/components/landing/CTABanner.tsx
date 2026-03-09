@@ -1,33 +1,44 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
 
 const CTABanner = () => {
   return (
     <section
       id="contact"
-      className="py-16 lg:py-20"
-      style={{ backgroundColor: "hsl(105, 11%, 7%)" }}
+      className="px-4 sm:px-6 lg:px-10 pt-16 pb-4"
+      style={{ backgroundColor: "#F2F2F0" }}
     >
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6 leading-tight">
-            We move fast and bring the best AI health intelligence to your community.
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, ease: "easeOut" as const }}
+        className="relative max-w-6xl mx-auto rounded-2xl overflow-hidden shadow-xl"
+        style={{ backgroundColor: "#0A0A0A" }}
+      >
+        {/* Radial glow at top center */}
+        <div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
+          style={{
+            background: "radial-gradient(ellipse at center, rgba(60,60,60,0.5) 0%, transparent 70%)",
+          }}
+        />
+
+        <div className="relative z-10 px-6 sm:px-12 lg:px-20 py-16 lg:py-20 text-center">
+          <h2 className="font-display text-3xl sm:text-4xl lg:text-[40px] font-bold text-white mb-5 leading-tight max-w-2xl mx-auto">
+            Protect your community before outbreaks strike
           </h2>
+          <p className="text-base max-w-xl mx-auto mb-8 leading-relaxed" style={{ color: "#A0A0A0" }}>
+            Sanjeevani uses AI and IoT sensors to uncover outbreak risks and deliver them to every health worker and citizen.
+          </p>
           <Button
             size="lg"
-            className="bg-accent text-accent-foreground hover:bg-accent/90 text-base font-semibold px-8 h-12 rounded-lg"
+            className="bg-white text-foreground hover:bg-white/90 text-sm font-semibold px-8 h-11 rounded-full shadow-lg"
           >
-            Contact Us
-            <ArrowRight className="w-4 h-4 ml-2" />
+            Get Started
           </Button>
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
     </section>
   );
 };
