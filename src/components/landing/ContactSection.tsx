@@ -15,8 +15,8 @@ const trustSignals = [
 
 const ContactSection = () => {
   return (
-    <section id="contact" className="py-12 lg:py-16 bg-background">
-      <div className="max-w-[520px] mx-auto px-4 sm:px-6">
+    <section id="contact" className="py-6 bg-background">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -24,70 +24,69 @@ const ContactSection = () => {
           variants={fadeUp}
           className="rounded-2xl bg-card shadow-xl border border-border/40 overflow-hidden"
         >
-          <div className="p-5 sm:p-7">
+          <div className="p-5 sm:p-6">
             {/* Header */}
-            <div className="text-center mb-5">
-              <p className="text-xs font-bold tracking-[0.2em] uppercase text-primary mb-3">
+            <div className="text-center mb-4">
+              <p className="text-xs font-bold tracking-[0.2em] uppercase text-primary mb-2">
                 Get in Touch
               </p>
-              <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground leading-tight mb-1.5">
+              <h2 className="font-display text-lg sm:text-xl font-bold text-foreground leading-tight mb-1">
                 Bring Sanjeevani to your district
               </h2>
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="text-xs text-muted-foreground">
                 Reach out to deploy the system in your region or partner with our team.
               </p>
             </div>
 
             {/* Form */}
-            <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <form className="space-y-2.5" onSubmit={(e) => e.preventDefault()}>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-medium text-foreground mb-1">Name</label>
+                  <label className="block text-[11px] font-medium text-foreground mb-0.5">Name</label>
                   <input type="text" placeholder="Your full name"
-                    className="w-full h-9 px-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
+                    className="w-full h-8 px-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-medium text-foreground mb-1">Organization</label>
+                  <label className="block text-[11px] font-medium text-foreground mb-0.5">Organization</label>
                   <input type="text" placeholder="District Health Office"
-                    className="w-full h-9 px-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
+                    className="w-full h-8 px-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-foreground mb-0.5">Email</label>
+                  <input type="email" placeholder="you@example.com"
+                    className="w-full h-8 px-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-foreground mb-0.5">Role</label>
+                  <select
+                    className="w-full h-8 px-3 rounded-lg border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors appearance-none"
+                    defaultValue="">
+                    <option value="" disabled>Select role</option>
+                    <option>District Health Officer</option>
+                    <option>ASHA Coordinator</option>
+                    <option>Hospital Administrator</option>
+                    <option>Researcher</option>
+                    <option>Other</option>
+                  </select>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[11px] font-medium text-foreground mb-1">Email</label>
-                <input type="email" placeholder="you@example.com"
-                  className="w-full h-9 px-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2.5 items-end">
+                <div>
+                  <label className="block text-[11px] font-medium text-foreground mb-0.5">Message</label>
+                  <input type="text" placeholder="Tell us about your district…"
+                    className="w-full h-8 px-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
+                </div>
+                <Button type="submit" className="h-8 px-6 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs whitespace-nowrap">
+                  Send Message <ArrowRight className="w-3 h-3 ml-1.5" />
+                </Button>
               </div>
-
-              <div>
-                <label className="block text-[11px] font-medium text-foreground mb-1">Role</label>
-                <select
-                  className="w-full h-9 px-3 rounded-lg border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors appearance-none"
-                  defaultValue="">
-                  <option value="" disabled>Select your role</option>
-                  <option>District Health Officer</option>
-                  <option>ASHA Coordinator</option>
-                  <option>Hospital Administrator</option>
-                  <option>Researcher</option>
-                  <option>Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-medium text-foreground mb-1">Message</label>
-                <textarea rows={3} placeholder="Tell us about your district…"
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-none" />
-              </div>
-
-              <Button type="submit" className="w-full h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs">
-                Send Message <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-              </Button>
             </form>
 
-            <div className="mt-4 pt-4 border-t border-border flex flex-wrap items-center justify-center gap-5">
+            <div className="mt-3 pt-3 border-t border-border flex flex-wrap items-center justify-center gap-5">
               {trustSignals.map((s) => (
-                <div key={s.label} className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <s.icon className="w-3.5 h-3.5 text-primary" />
+                <div key={s.label} className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <s.icon className="w-3 h-3 text-primary" />
                   <span>{s.label}</span>
                 </div>
               ))}
