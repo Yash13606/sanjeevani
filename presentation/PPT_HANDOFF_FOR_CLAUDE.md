@@ -8,8 +8,9 @@ The repository root in this workspace is `D:\ML for dataScience\github_sanjeevan
 
 The current paper at `D:\ML for dataScience\paper_fixed4.docx` and the repository copy `paper_fixed4.docx` already match the PPT cover title and team. **Use this exact title and roster in the deck and paper:**
 
-> Sanjeevani: Early Warning of Water-Borne Disease Risk Using Machine Learning  
-> A Synthetic Simulation Study
+**Title:** Sanjeevani: Early Warning of Water-Borne Disease Risk Using Machine Learning
+
+**Subtitle:** A Synthetic Simulation Study
 
 | Student | Register number |
 | --- | --- |
