@@ -14,6 +14,9 @@ outbreak, patient diagnosis, or drinking water safety.
 The single project specification, dataset explanation, evaluation status, and
 friend handoff are in [SANJEEVANI_ML_PROJECT.md](SANJEEVANI_ML_PROJECT.md).
 A matching PDF is provided beside it.
+The revised [research paper](paper_fixed4.docx) describes the same synthetic
+study and its single-world smoke test. It preserves the original five-author
+block and marks real-world validation and the full multiworld study as pending.
 
 ## Run on a Windows laptop
 
