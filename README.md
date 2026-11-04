@@ -18,6 +18,8 @@ The revised [research paper](paper_fixed4.docx) describes the same synthetic
 study and its single-world smoke test. Its title and three-student roster match
 the supplied project presentation. Real-world validation and the full
 multiworld study remain pending.
+For the presentation revision, see the [Claude Code handoff](presentation/PPT_HANDOFF_FOR_CLAUDE.md)
+and its two conceptual illustration assets in `presentation/assets/`.
 
 ## Run on a Windows laptop
 
