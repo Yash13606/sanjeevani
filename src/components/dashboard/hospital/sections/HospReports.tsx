@@ -7,12 +7,18 @@ import {
   DISEASE_PIE, WEEKLY_BAR, AGE_BAR, PINCODE_TABLE, RISK_COLOR, RISK_BG,
 } from "../hospitalData";
 
-function CustomTooltip({ active, payload, label }: any) {
+type ChartTooltipProps = {
+  active?: boolean;
+  payload?: Array<{ dataKey?: string | number; name?: string | number; value?: string | number; color?: string }>;
+  label?: string | number;
+};
+
+function CustomTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 px-4 py-3 text-xs">
       <p className="font-bold text-[#0D1F1A] mb-1">{label}</p>
-      {payload.map((p: any) => (
+      {payload.map((p) => (
         <p key={p.dataKey} style={{ color: p.color }}>{p.name}: <span className="font-mono font-bold">{p.value}</span></p>
       ))}
     </div>

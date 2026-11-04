@@ -11,27 +11,27 @@ interface Message {
 }
 
 const QUICK_REPLIES = [
-  "💧 Is water safe?",
-  "🦠 Cholera symptoms?",
-  "🏥 Nearest PHC?",
-  "🛡️ Prevention tips",
-  "📊 My area risk?",
+  "ðŸ’§ Is water safe?",
+  "ðŸ¦  Cholera symptoms?",
+  "ðŸ¥ Nearest PHC?",
+  "ðŸ›¡ï¸ Prevention tips",
+  "ðŸ“Š My area risk?",
 ];
 
 const BOT_RESPONSES: Record<string, string> = {
-  "💧 Is water safe?": `Based on current sensor data for pincode 781001:\n- TDS: 842 ppm (⚠️ Above safe limit of 500 ppm)\n- pH: 5.2 (⚠️ Acidic — safe range is 6.5–8.5)\n- Turbidity: 78 NTU (⚠️ High)\n\n🚫 I recommend NOT drinking tap water directly.\n✅ Please boil water for at least 10 minutes before use.\n✅ Alternatively, use a certified water purifier.\n\nWould you like more about water purification methods?`,
-  "🦠 Cholera symptoms?": `⚠️ Key cholera symptoms to watch for:\n\n1. Sudden profuse watery diarrhea\n2. Vomiting without nausea\n3. Rapid dehydration\n4. Muscle cramps\n5. Dry mouth and extreme thirst\n\n🚨 If you experience these, contact your ASHA worker immediately or go to PHC Dispur.\n\n✅ Oral rehydration salts (ORS) can help prevent fatal dehydration while seeking care.`,
-  "🏥 Nearest PHC?": `📍 Nearest healthcare facilities:\n\n1. PHC Dispur — 2.1 km away\n   ☎️ 0361-2XX-XXXX | Open 24/7\n\n2. Community Health Centre Kamrup — 4.8 km\n   ☎️ 0361-2XX-XXXX | Mon-Sat 8am–6pm\n\n3. Gauhati Medical College Hospital — 8.2 km\n   ☎️ 0361-2XX-XXXX | Emergency 24/7\n\n👩‍⚕️ Your assigned ASHA worker Priya Sharma is also reachable at 98540-XXXXX.`,
-  "🛡️ Prevention tips": `✅ Top 5 prevention tips for your area:\n\n1. 💧 Boil all drinking water for at least 10 minutes\n2. 🧼 Wash hands with soap — especially before meals\n3. 🥦 Avoid raw vegetables until water situation improves\n4. 🚽 Ensure proper sanitation — no open defecation\n5. 📋 Report symptoms early to your ASHA worker\n\n🌟 Clean water supply is available at PHC Dispur for emergency use.`,
-  "📊 My area risk?": `📊 Current risk summary for Guwahati 781001:\n\n⚠️ Risk Level: MEDIUM\n🦠 14 cases reported nearby this week\n💧 TDS: 842 ppm (Critical — 68% above safe limit)\n⚗️ pH: 5.2 (Acidic — unsafe for drinking)\n🌊 Turbidity: 78 NTU (High)\n\n📅 Alert issued: Mar 9, 2026 · Sanjeevani AI\n\nActions taken: PHC team alerted, ASHA workers notified, water quality advisory issued.`,
-  default: `I understand your concern. Based on the current health data for your area (Guwahati, 781001), I'd recommend staying cautious about water consumption and following our alerts.\n\nYou can ask me about:\n• Water safety status\n• Disease symptoms\n• Nearest healthcare facilities\n• Prevention tips\n• Your area risk level\n\nHow can I help you today?`,
+  "ðŸ’§ Is water safe?": `Based on current sensor data for pincode 781001:\n- TDS: 842 ppm (âš ï¸ Above safe limit of 500 ppm)\n- pH: 5.2 (âš ï¸ Acidic â€” safe range is 6.5â€“8.5)\n- Turbidity: 78 NTU (âš ï¸ High)\n\nðŸš« I recommend NOT drinking tap water directly.\nâœ… Please boil water for at least 10 minutes before use.\nâœ… Alternatively, use a certified water purifier.\n\nWould you like more about water purification methods?`,
+  "ðŸ¦  Cholera symptoms?": `âš ï¸ Key cholera symptoms to watch for:\n\n1. Sudden profuse watery diarrhea\n2. Vomiting without nausea\n3. Rapid dehydration\n4. Muscle cramps\n5. Dry mouth and extreme thirst\n\nðŸš¨ If you experience these, contact your ASHA worker immediately or go to PHC Dispur.\n\nâœ… Oral rehydration salts (ORS) can help prevent fatal dehydration while seeking care.`,
+  "ðŸ¥ Nearest PHC?": `ðŸ“ Nearest healthcare facilities:\n\n1. PHC Dispur â€” 2.1 km away\n   â˜Žï¸ 0361-2XX-XXXX | Open 24/7\n\n2. Community Health Centre Kamrup â€” 4.8 km\n   â˜Žï¸ 0361-2XX-XXXX | Mon-Sat 8amâ€“6pm\n\n3. Gauhati Medical College Hospital â€” 8.2 km\n   â˜Žï¸ 0361-2XX-XXXX | Emergency 24/7\n\nðŸ‘©â€âš•ï¸ Your assigned ASHA worker Priya Sharma is also reachable at 98540-XXXXX.`,
+  "ðŸ›¡ï¸ Prevention tips": `âœ… Top 5 prevention tips for your area:\n\n1. ðŸ’§ Boil all drinking water for at least 10 minutes\n2. ðŸ§¼ Wash hands with soap â€” especially before meals\n3. ðŸ¥¦ Avoid raw vegetables until water situation improves\n4. ðŸš½ Ensure proper sanitation â€” no open defecation\n5. ðŸ“‹ Report symptoms early to your ASHA worker\n\nðŸŒŸ Clean water supply is available at PHC Dispur for emergency use.`,
+  "ðŸ“Š My area risk?": `ðŸ“Š Current risk summary for Guwahati 781001:\n\nâš ï¸ Risk Level: MEDIUM\nðŸ¦  14 cases reported nearby this week\nðŸ’§ TDS: 842 ppm (Critical â€” 68% above safe limit)\nâš—ï¸ pH: 5.2 (Acidic â€” unsafe for drinking)\nðŸŒŠ Turbidity: 78 NTU (High)\n\nðŸ“… Alert issued: Mar 9, 2026 Â· Sanjeevani AI\n\nActions taken: PHC team alerted, ASHA workers notified, water quality advisory issued.`,
+  default: `I understand your concern. Based on the current health data for your area (Guwahati, 781001), I'd recommend staying cautious about water consumption and following our alerts.\n\nYou can ask me about:\nâ€¢ Water safety status\nâ€¢ Disease symptoms\nâ€¢ Nearest healthcare facilities\nâ€¢ Prevention tips\nâ€¢ Your area risk level\n\nHow can I help you today?`,
 };
 
 const INITIAL_MESSAGES: Message[] = [
   {
     id: 1,
     side: "bot",
-    text: `Hello Rahul! 👋 I'm your Sanjeevani health assistant.\n\nYour area (Guwahati, 781001) currently has ⚠️ MEDIUM RISK.\n\nI can help you with health advice, alert information, and disease prevention. What would you like to know?`,
+    text: `Hello Rahul! ðŸ‘‹ I'm your Sanjeevani health assistant.\n\nYour area (Guwahati, 781001) currently has âš ï¸ MEDIUM RISK.\n\nI can help you with health advice, alert information, and disease prevention. What would you like to know?`,
     time: "Now",
   },
   {
@@ -43,7 +43,7 @@ const INITIAL_MESSAGES: Message[] = [
   {
     id: 3,
     side: "bot",
-    text: `Based on current sensor data for pincode 781001:\n- TDS: 842 ppm (⚠️ Above safe limit of 500 ppm)\n- pH: 5.2 (⚠️ Acidic — safe range is 6.5–8.5)\n- Turbidity: 78 NTU (⚠️ High)\n\n🚫 I recommend NOT drinking tap water directly.\n✅ Please boil water for at least 10 minutes before use.\n✅ Alternatively, use a certified water purifier.\n\nWould you like to know more about water purification?`,
+    text: `Based on current sensor data for pincode 781001:\n- TDS: 842 ppm (âš ï¸ Above safe limit of 500 ppm)\n- pH: 5.2 (âš ï¸ Acidic â€” safe range is 6.5â€“8.5)\n- Turbidity: 78 NTU (âš ï¸ High)\n\nðŸš« I recommend NOT drinking tap water directly.\nâœ… Please boil water for at least 10 minutes before use.\nâœ… Alternatively, use a certified water purifier.\n\nWould you like to know more about water purification?`,
     time: "Now",
   },
 ];
@@ -59,7 +59,7 @@ export default function ChatbotSection() {
   }, [messages, isTyping]);
 
   const GEMINI_API_KEY =
-    import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyA9n_DHvPsrrVJJR7NobmtfMAsNrb0U5Z4";
+    import.meta.env.VITE_GEMINI_API_KEY;
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
@@ -67,6 +67,12 @@ export default function ChatbotSection() {
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsTyping(true);
+
+    if (!GEMINI_API_KEY) {
+      setMessages((prev) => [...prev, { id: Date.now() + 1, side: "bot", text: "Demo chat is not configured on this device.", time: "Just now" }]);
+      setIsTyping(false);
+      return;
+    }
 
     try {
       const systemInstruction = "You are the Sanjeevani AI Health Assistant for a citizen in Guwahati (pincode 781001). The current area risk is MEDIUM. Provide helpful, concise health advice, symptom checking, and water safety tips. Keep answers short and use emojis.";
@@ -99,9 +105,8 @@ export default function ChatbotSection() {
       <div className="mb-5">
         <h2 className="font-display text-[24px] font-bold text-[#0D1F1A]">Sanjeevani AI Health Assistant</h2>
         <div className="flex items-center gap-2 mt-1">
-          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-sm text-green-600 font-medium">Online ·</span>
-          <span className="text-sm text-gray-500">Powered by AI</span>
+          <span className="w-2 h-2 rounded-full bg-amber-500" />
+          <span className="text-sm text-gray-600 font-medium">{GEMINI_API_KEY ? "Demo key configured" : "Demo chat unavailable"}</span>
         </div>
       </div>
 
@@ -214,7 +219,7 @@ export default function ChatbotSection() {
                 "Report symptoms early",
               ].map((tip) => (
                 <li key={tip} className="flex items-center gap-2 text-xs text-gray-600">
-                  <span className="text-green-500 shrink-0">✅</span>
+                  <span className="text-green-500 shrink-0">âœ…</span>
                   {tip}
                 </li>
               ))}
@@ -226,10 +231,10 @@ export default function ChatbotSection() {
             <h4 className="font-display font-bold text-[#0D1F1A] mb-3 text-sm">Emergency Contacts</h4>
             <div className="space-y-2.5">
               {[
-                { icon: "🏥", label: "PHC Dispur", number: "0361-2XX-XXXX" },
-                { icon: "👩‍⚕️", label: "ASHA Priya", number: "98540-XXXXX" },
-                { icon: "🚑", label: "District Hospital", number: "0361-2XX-XXXX" },
-                { icon: "🆘", label: "Health Helpline", number: "104" },
+                { icon: "ðŸ¥", label: "PHC Dispur", number: "0361-2XX-XXXX" },
+                { icon: "ðŸ‘©â€âš•ï¸", label: "ASHA Priya", number: "98540-XXXXX" },
+                { icon: "ðŸš‘", label: "District Hospital", number: "0361-2XX-XXXX" },
+                { icon: "ðŸ†˜", label: "Health Helpline", number: "104" },
               ].map((c) => (
                 <div key={c.label} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

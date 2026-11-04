@@ -8,16 +8,16 @@ type GenderFilter = "All" | "M" | "F" | "Other";
 type RiskFilter = "All" | RiskLevel;
 
 const GEMINI_API_KEY =
-  import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyA9n_DHvPsrrVJJR7NobmtfMAsNrb0U5Z4";
+  import.meta.env.VITE_GEMINI_API_KEY;
 
-// ─── Delete confirm modal ─────────────────────────────────────────────────────
+// â”€â”€â”€ Delete confirm modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function DeleteModal({ patient, onClose, onConfirm }: { patient: Patient; onClose: () => void; onConfirm: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
         className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
         <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-          <span className="text-2xl">🗑️</span>
+          <span className="text-2xl">ðŸ—‘ï¸</span>
         </div>
         <h3 className="font-display text-lg font-bold text-[#0D1F1A] mb-2">Remove Patient?</h3>
         <p className="text-sm text-gray-500 mb-6">Are you sure you want to remove <strong>{patient.name}</strong>? This action cannot be undone.</p>
@@ -30,7 +30,7 @@ function DeleteModal({ patient, onClose, onConfirm }: { patient: Patient; onClos
   );
 }
 
-// ─── Add / Edit Patient Slide-over with CSV + AI ──────────────────────────────
+// â”€â”€â”€ Add / Edit Patient Slide-over with CSV + AI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PatientSlideOver({ patient, onClose, onSave }: { patient?: Patient; onClose: () => void; onSave: (p: Partial<Patient>) => void }) {
   const [saved, setSaved] = useState(false);
   
@@ -80,6 +80,11 @@ function PatientSlideOver({ patient, onClose, onSave }: { patient?: Patient; onC
     if (!csvContent) return;
     setIsAiLoading(true);
     setAiMessages(p => [...p, { role: "user", text: "Please extract patient details and autofill the form." }]);
+    if (!GEMINI_API_KEY) {
+      setAiMessages(p => [...p, { role: "bot", text: "AI CSV assistance is not configured on this device." }]);
+      setIsAiLoading(false);
+      return;
+    }
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
         method: "POST",
@@ -106,10 +111,10 @@ function PatientSlideOver({ patient, onClose, onSave }: { patient?: Patient; onC
         pincode: parsed.pincode || prev.pincode,
         history: parsed.history || prev.history,
       }));
-      setAiMessages(p => [...p, { role: "bot", text: "✅ I've successfully extracted the details and populated the form below! Please review the fields before saving." }]);
+      setAiMessages(p => [...p, { role: "bot", text: "âœ… I've successfully extracted the details and populated the form below! Please review the fields before saving." }]);
     } catch (err) {
       console.error(err);
-      setAiMessages(p => [...p, { role: "bot", text: "❌ Sorry, I encountered an error while trying to extract the data. Please ensure the CSV contains recognizable patient information." }]);
+      setAiMessages(p => [...p, { role: "bot", text: "âŒ Sorry, I encountered an error while trying to extract the data. Please ensure the CSV contains recognizable patient information." }]);
     }
     setIsAiLoading(false);
   };
@@ -120,6 +125,11 @@ function PatientSlideOver({ patient, onClose, onSave }: { patient?: Patient; onC
     setAiMessages(p => [...p, { role: "user", text: userText }]);
     setChatInput("");
     setIsAiLoading(true);
+    if (!GEMINI_API_KEY) {
+      setAiMessages(p => [...p, { role: "bot", text: "AI CSV assistance is not configured on this device." }]);
+      setIsAiLoading(false);
+      return;
+    }
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
         method: "POST",
@@ -277,7 +287,7 @@ function PatientSlideOver({ patient, onClose, onSave }: { patient?: Patient; onC
   );
 }
 
-// ─── Patient Detail Slide-over ────────────────────────────────────────────────
+// â”€â”€â”€ Patient Detail Slide-over â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PatientDetail({ patient, onClose }: { patient: Patient; onClose: () => void }) {
   const [tab, setTab] = useState<"overview" | "visits" | "cases">("overview");
   const VISITS = [
@@ -294,7 +304,7 @@ function PatientDetail({ patient, onClose }: { patient: Patient; onClose: () => 
         <div className="px-6 py-5 border-b bg-[#EFF6FF] flex items-start justify-between">
           <div>
             <h2 className="font-display text-xl font-bold text-[#0D1F1A]">{patient.name}</h2>
-            <p className="text-sm text-gray-500 mt-0.5">{patient.gender}, {patient.age} · {patient.address}</p>
+            <p className="text-sm text-gray-500 mt-0.5">{patient.gender}, {patient.age} Â· {patient.address}</p>
             <span className="inline-block mt-2 text-[10px] font-bold px-2.5 py-1 rounded-full"
               style={{ background: RISK_BG[patient.risk], color: RISK_COLOR[patient.risk] }}>
               {patient.risk} Risk Zone
@@ -320,7 +330,7 @@ function PatientDetail({ patient, onClose }: { patient: Patient; onClose: () => 
               {[
                 { l: "Patient ID", v: patient.id },
                 { l: "Phone", v: patient.phone },
-                { l: "Email", v: patient.email || "—" },
+                { l: "Email", v: patient.email || "â€”" },
                 { l: "Address", v: `${patient.address}, Guwahati` },
                 { l: "Pincode", v: patient.pincode },
                 { l: "Last Visit", v: patient.lastVisit },
@@ -345,7 +355,7 @@ function PatientDetail({ patient, onClose }: { patient: Patient; onClose: () => 
                 <div key={i} className="relative">
                   <div className="absolute -left-4 top-1.5 w-3 h-3 rounded-full bg-[#1565C0] border-2 border-white shadow-sm z-10" />
                   <div className="bg-gray-50 rounded-xl p-4 ml-2">
-                    <p className="text-xs text-gray-400 mb-1">{v.date} · {v.type}</p>
+                    <p className="text-xs text-gray-400 mb-1">{v.date} Â· {v.type}</p>
                     <p className="text-xs font-semibold text-[#0D1F1A] mb-2">{v.doctor}</p>
                     <div className="space-y-1 text-xs text-gray-600">
                       <p>Diagnosis: <span className="font-medium">{v.diagnosis}</span></p>
@@ -365,9 +375,9 @@ function PatientDetail({ patient, onClose }: { patient: Patient; onClose: () => 
               <div className="rounded-xl border border-gray-100 p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-mono text-xs font-bold text-[#0D1F1A]">CASE-067</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FFF3E0] text-[#FB8C00]">🟠 MODERATE</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FFF3E0] text-[#FB8C00]">ðŸŸ  MODERATE</span>
                 </div>
-                <p className="text-xs text-gray-500">Suspected Cholera · Under Treatment · Mar 8</p>
+                <p className="text-xs text-gray-500">Suspected Cholera Â· Under Treatment Â· Mar 8</p>
               </div>
               <button className="w-full py-2.5 rounded-xl bg-[#E53935] text-white text-xs font-semibold hover:bg-red-700 transition-colors">Report New Case for Patient</button>
             </div>
@@ -378,7 +388,7 @@ function PatientDetail({ patient, onClose }: { patient: Patient; onClose: () => 
   );
 }
 
-// ─── Patients Section ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Patients Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function HospPatients() {
   const [gFilter, setGFilter] = useState<GenderFilter>("All");
   const [rFilter, setRFilter] = useState<RiskFilter>("All");
@@ -404,7 +414,7 @@ export default function HospPatients() {
         <div className="flex items-center justify-between">
           <h2 className="font-display text-[28px] font-bold text-[#0D1F1A]">Patient Records</h2>
           <div className="flex items-center gap-3">
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, phone, pincode…"
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, phone, pincodeâ€¦"
               className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 min-w-60" />
             <button onClick={() => setShowAdd(true)} className="px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity shrink-0" style={{ background: "#0D7A4A" }}>+ Add Patient</button>
           </div>
@@ -419,7 +429,7 @@ export default function HospPatients() {
           </div>
           <div className="flex gap-1 bg-gray-100 p-1 rounded-xl">
             {(["All", "HIGH", "MEDIUM", "LOW"] as RiskFilter[]).map(r => (
-              <button key={r} onClick={() => setRFilter(r)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${rFilter === r ? "bg-white text-[#0D1F1A] shadow-sm" : "text-gray-500"}`}>{r === "HIGH" ? "🔴 High" : r === "MEDIUM" ? "🟠 Med" : r === "LOW" ? "🟢 Low" : "All"}</button>
+              <button key={r} onClick={() => setRFilter(r)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${rFilter === r ? "bg-white text-[#0D1F1A] shadow-sm" : "text-gray-500"}`}>{r === "HIGH" ? "ðŸ”´ High" : r === "MEDIUM" ? "ðŸŸ  Med" : r === "LOW" ? "ðŸŸ¢ Low" : "All"}</button>
             ))}
           </div>
         </div>
@@ -459,13 +469,13 @@ export default function HospPatients() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-600">{p.age} · {p.gender === "M" ? "Male" : p.gender === "F" ? "Female" : "Other"}</td>
+                    <td className="px-4 py-3 text-xs text-gray-600">{p.age} Â· {p.gender === "M" ? "Male" : p.gender === "F" ? "Female" : "Other"}</td>
                     <td className="px-4 py-3 text-xs text-gray-600 font-mono">{p.phone}</td>
                     <td className="px-4 py-3 text-xs text-gray-600">{p.address}, {p.pincode}</td>
                     <td className="px-4 py-3 text-xs text-gray-500">{p.lastVisit}</td>
                     <td className="px-4 py-3">
                       <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ color: RISK_COLOR[p.risk], background: RISK_BG[p.risk] }}>
-                        {p.risk === "HIGH" ? "🔴" : p.risk === "MEDIUM" ? "🟠" : "🟢"} {p.risk}
+                        {p.risk === "HIGH" ? "ðŸ”´" : p.risk === "MEDIUM" ? "ðŸŸ " : "ðŸŸ¢"} {p.risk}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -484,13 +494,13 @@ export default function HospPatients() {
           </div>
           {/* Pagination */}
           <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
-            <span>Showing 1–{Math.min(filtered.length, 12)} of 1,284 patients</span>
+            <span>Showing 1â€“{Math.min(filtered.length, 12)} of 1,284 patients</span>
             <div className="flex items-center gap-1">
-              <button className="px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-50">← Prev</button>
+              <button className="px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-50">â† Prev</button>
               {[1, 2, 3].map(n => <button key={n} className={`w-7 h-7 rounded-lg text-xs font-semibold ${n === 1 ? "bg-[#0D1F1A] text-white" : "hover:bg-gray-50 border border-gray-200"}`}>{n}</button>)}
               <span>...</span>
               <button className="px-2.5 py-1 rounded-lg border border-gray-200 font-mono">107</button>
-              <button className="px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-50">Next →</button>
+              <button className="px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-50">Next â†’</button>
             </div>
           </div>
         </motion.div>

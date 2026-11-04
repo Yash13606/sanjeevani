@@ -1,0 +1,116 @@
+# Sanjeevani Simulation Configuration (Simulation-First Architecture)
+system:
+  project_name: "sanjeevani_ews"
+  version: "3.0.0-synthetic-first"
+  state: "Tamil Nadu"
+  units_file: "config/tamil_nadu_districts.yaml"
+  burn_in_days: 365
+  total_days: 2191  # 6 full years (2017-01-01 to 2022-12-31)
+  prediction_interval_days: 7
+  prediction_day_of_week: 0  # Monday (0)
+
+splits:
+  train_seeds: [1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014, 1015, 1016, 1017, 1018, 1019, 1020]
+  val_seeds: [2001, 2002, 2003, 2004, 2005]
+  test_seeds: [3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010]
+
+climate:
+  # Stochastic weather model parameters for Tamil Nadu
+  temp_mean: 29.2
+  temp_seasonal_amp: 3.8
+  temp_daily_noise_sd: 1.2
+  # Monsoon transition probabilities
+  # Phase 1: Pre-monsoon / Summer (Mar-May)
+  # Phase 2: Southwest monsoon (Jun-Sep)
+  # Phase 3: Northeast monsoon (Oct-Dec) - primary rainfall for TN
+  # Phase 4: Winter / Post-monsoon (Jan-Feb)
+  rain_gamma_shape: 1.3
+  rain_gamma_scale: 16.0
+  heavy_rain_threshold_mm: 35.0
+  heat_anomaly_threshold_c: 2.5
+
+water_system:
+  latent_ar1_phi: 0.72
+  baseline_contamination_rate: 0.04
+  rain_flush_multiplier: 2.8
+  heavy_rain_after_dry_multiplier: 4.2
+  dry_days_scarcity_threshold: 21
+  scarcity_multiplier: 1.8
+  supply_outage_prob_base: 0.05
+  supply_outage_duration_mean: 2.2
+  treatment_failure_prob: 0.08
+
+disease_engine:
+  # Mathematically consistent combined hazard scaling:
+  # lambda_total = lambda_water + lambda_p2p + lambda_nbr
+  # beta_env: scales normalized water exposure E(t)
+  beta_env_cholera: 0.00045
+  beta_env_add: 0.00085
+  # beta_p2p: person to person secondary transmission
+  beta_p2p_cholera: 0.42
+  beta_p2p_add: 0.28
+  # beta_nbr: cross-district importation rate
+  beta_nbr_cholera: 0.08
+  beta_nbr_add: 0.05
+
+  # Incubation parameters (Log-normal distribution parameters)
+  # Cholera: median 1.4 days (ln(1.4)=0.3365, sigma=0.65)
+  cholera:
+    incubation_mu: 0.3365
+    incubation_sigma: 0.65
+    min_incubation_days: 1
+    max_incubation_days: 6
+    symptomatic_ratio: 0.25
+    baseline_cases_daily_per_100k: 0.02
+    operational_threshold_cases_7d: 2
+    operational_z_score: 2.5
+    immunity_waning_days_mean: 360
+
+  # Acute Diarrheal Disease (ADD): median 2.0 days (ln(2.0)=0.6931, sigma=0.50)
+  add:
+    incubation_mu: 0.6931
+    incubation_sigma: 0.50
+    min_incubation_days: 1
+    max_incubation_days: 7
+    symptomatic_ratio: 0.70
+    baseline_cases_daily_per_100k: 0.45
+    operational_threshold_cases_7d: 8
+    operational_z_score: 2.5
+    immunity_waning_days_mean: 180
+
+  # Outbreak recovery sustained window
+  sustained_recovery_days: 14
+
+surveillance_scenarios:
+  baseline:
+    sensor_coverage: 0.30
+    sensor_noise_sd: 0.25
+    sensor_uptime: 0.82
+    lab_test_frequency_days: 7
+    asha_case_report_prob: 0.45
+    asha_cluster_alert_threshold: 6
+    opd_reporting_lag_days_mean: 4.2
+    idsp_bulletin_delay_days_mean: 12.0
+    idsp_reporting_completeness: 0.55
+
+  improved:
+    sensor_coverage: 0.65
+    sensor_noise_sd: 0.18
+    sensor_uptime: 0.92
+    lab_test_frequency_days: 3
+    asha_case_report_prob: 0.70
+    asha_cluster_alert_threshold: 3
+    opd_reporting_lag_days_mean: 2.5
+    idsp_bulletin_delay_days_mean: 7.0
+    idsp_reporting_completeness: 0.80
+
+  enhanced:
+    sensor_coverage: 0.90
+    sensor_noise_sd: 0.10
+    sensor_uptime: 0.98
+    lab_test_frequency_days: 1
+    asha_case_report_prob: 0.88
+    asha_cluster_alert_threshold: 2
+    opd_reporting_lag_days_mean: 1.2
+    idsp_bulletin_delay_days_mean: 4.0
+    idsp_reporting_completeness: 0.95

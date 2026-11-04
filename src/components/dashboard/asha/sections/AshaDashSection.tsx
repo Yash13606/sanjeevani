@@ -299,7 +299,7 @@ export default function AshaDashboard() {
                   const { x, y } = toXY(m.lat, m.lng, W, H);
                   const isActive = activeMarker === m.pincode;
                   const color = RISK_COLOR[m.risk];
-                  const isYours = (m as any).isYours;
+                  const isYours = "isYours" in m && m.isYours;
                   return (
                     <g key={m.pincode} onClick={() => setActiveMarker(isActive ? null : m.pincode)} style={{ cursor: "pointer" }}>
                       {/* Outer pulse for your area */}

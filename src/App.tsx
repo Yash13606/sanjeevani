@@ -10,6 +10,7 @@ import LoginPage from "./pages/Login.tsx";
 import CitizenDashboard from "./pages/dashboards/CitizenDashboard.tsx";
 import AshaDashboard from "./pages/dashboards/AshaDashboard.tsx";
 import HospitalDashboard from "./pages/dashboards/HospitalDashboard.tsx";
+import SimulationLab from "./pages/SimulationLab.tsx";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/dashboard/citizen" element={<CitizenDashboard />} />
             <Route path="/dashboard/asha" element={<AshaDashboard />} />
             <Route path="/dashboard/hospital" element={<HospitalDashboard />} />
+            <Route path="/ml-lab" element={<SimulationLab />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

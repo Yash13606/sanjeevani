@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "project": "Sanjeevani synthetic outbreak early warning and detection",
+  "classification": "SYNTHETIC",
+  "real_world_validation": false,
+  "generator": "sanjeevani_sim.WorldSimulator",
+  "labels": {
+    "M1": "New simulated outbreak onset after prediction time within 7 days",
+    "M2": "Simulated outbreak active at prediction time"
+  },
+  "generated_inputs": [
+    "district profiles and spatial network",
+    "weather and water system",
+    "exposure, infection, symptoms and outbreak events",
+    "sensor, laboratory, ASHA, OPD and IDSP-like observations"
+  ],
+  "historical_context_only": [
+    {
+      "name": "EpiClim IDSP outbreak compilation",
+      "url": "https://zenodo.org/records/14580510",
+      "used_for_training_labels": false
+    },
+    {
+      "name": "NFHS-5 district indicators",
+      "url": "https://data.mendeley.com/datasets/t3s358sfzg/1",
+      "used_for_training_labels": false
+    },
+    {
+      "name": "NASA POWER daily weather",
+      "url": "https://power.larc.nasa.gov/docs/services/api/temporal/daily/",
+      "used_for_training_features": false
+    }
+  ],
+  "limitations": [
+    "No model result is a real district outbreak forecast.",
+    "Synthetic alerts cannot establish drinking water safety or clinical risk.",
+    "The simulator parameters include explicit assumptions and need independent validation."
+  ]
+}

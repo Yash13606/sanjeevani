@@ -112,6 +112,9 @@ const Navbar = () => {
 
             {/* Desktop CTA — right */}
             <div className="hidden lg:flex items-center gap-3">
+              <button type="button" onClick={() => navigate("/ml-lab")} className="px-3 py-2 text-sm font-semibold text-[#0D7A4A] hover:underline">
+                ML Lab
+              </button>
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Button variant="outline" onClick={() => navigate("/login")} className="text-sm font-medium px-5 rounded-full border-border text-foreground hover:bg-muted">
                   Login
@@ -160,6 +163,7 @@ const Navbar = () => {
                 </motion.a>
               ))}
               <div className="mt-6 space-y-3">
+                <Button variant="outline" onClick={() => { setMobileOpen(false); navigate("/ml-lab"); }} className="w-full rounded-full">ML Lab</Button>
                 <Button variant="outline" onClick={() => { setMobileOpen(false); navigate("/login"); }} className="w-full rounded-full">Login</Button>
                 <Button onClick={() => { setMobileOpen(false); navigate("/login"); }} className="w-full rounded-full text-white" style={{ background: "#12201A" }}>
                   Get Started

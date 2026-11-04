@@ -233,6 +233,11 @@ export default function CitizenDashboard() {
           </div>
         </header>
 
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-amber-200 bg-amber-50 px-5 py-2 text-xs text-amber-950">
+          <span><strong>Demo UI:</strong> cases, alerts and maps here are sample content.</span>
+          <button type="button" onClick={() => navigate("/ml-lab")} className="font-semibold underline">Open synthetic ML Lab</button>
+        </div>
+
         {/* Scrollable section content */}
         <main className="flex-1 overflow-y-auto">
           <AnimatePresence mode="wait">

@@ -5,19 +5,19 @@ import { Send, Stethoscope } from "lucide-react";
 type Side = "bot" | "user";
 interface Message { id: number; side: Side; text: string }
 
-const QUICK_REPLIES = ["📊 Case summary?", "🗺️ Risk zones?", "🦠 Cholera protocol?", "🧑‍⚕️ Patient lookup?", "📋 Generate report?"];
+const QUICK_REPLIES = ["ðŸ“Š Case summary?", "ðŸ—ºï¸ Risk zones?", "ðŸ¦  Cholera protocol?", "ðŸ§‘â€âš•ï¸ Patient lookup?", "ðŸ“‹ Generate report?"];
 
 const BOT_RESPONSES: Record<string, string> = {
-  "📊 Case summary?": `📊 Hospital Summary — Mar 2026:\n\n🔴 Severe: 8 cases (5 currently hospitalized)\n🟠 Moderate: 24 cases\n🟡 Mild: 19 cases\n✅ Recovered: 16 cases\n\n📈 Total active: 51\nMost common: Cholera (34%) · Typhoid (28%)\n\n⚠️ Peak day: Mar 7 — 18 admissions\n\nOccupancy alert: ICU at 78% capacity.`,
-  "🗺️ Risk zones?": `🗺️ Outbreak Hotspots Near Gauhati Medical College:\n\n1. 🔴 Kamrup East (781001) — HIGHEST\n   TDS: 842 ppm | pH: 5.2 | Cases: 18 total\n\n2. 🔴 Azara (781017)\n   TDS: 710 ppm | Cases: 14 total\n\n3. 🟠 Jalukbari (781013)\n   TDS: 520 ppm | Cases: 11 total\n\n4. 🟠 Beltola (781028)\n   TDS: 620 ppm | Cases: 9 total\n\n5. 🟢 Your Area: Dispur (781005)\n   TDS: 310 ppm | Cases: 4 (low risk)\n\n📢 District RRT has been notified for 781001.`,
-  "🦠 Cholera protocol?": `💊 Cholera Clinical Protocol (WHO/ICMR):\n\n1. CONFIRM: Rice-water stools + rapid dehydration\n2. REHYDRATE: IV Ringer's Lactate — 100mL/kg in 3 hrs (severe)\n3. ORS: Continue oral — 200mL per stool\n4. ANTIBIOTIC: Doxycycline 300mg single dose (adults)\n   Azithromycin 1g for pregnant/children\n5. MONITOR: Vitals q1h for severe cases\n6. ISOLATE: Contact precautions, gloves\n7. REPORT: Submit via Sanjeevani within 24h\n8. TRACE: Identify water source\n\n📞 District Health Officer: 0361-2XX-XXXX`,
-  "🧑‍⚕️ Patient lookup?": `🧑‍⚕️ Recent Patients — Last 7 Days:\n\nP-001 — Arun Kalita, 45M · Mar 8\n   Suspected Cholera · Under Treatment\n\nP-002 — Sunita Borah, 32F · Mar 7\n   Cholera (confirmed) · Hospitalized\n\nP-003 — Manish Gogoi, 67M · Mar 7\n   Typhoid · Hospitalized — watch BP\n\nP-008 — Rekha Baruah, 55F · Mar 3\n   Cholera · ICU — critical\n\nTo view full records, navigate to Patients section.`,
-  "📋 Generate report?": `📋 Monthly Report — March 2026:\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\nGAUHATI MEDICAL COLLEGE\nDisease Surveillance Report · Q1 2026\n\n📊 SUMMARY\n• Total Cases: 67\n• Severe: 8 | Moderate: 24 | Mild: 19 | Recovered: 16\n• Recovery Rate: 76%\n• Avg Hospitalization Duration: 4.2 days\n\n🦠 TOP DISEASES\n1. Cholera — 34%\n2. Typhoid — 28%\n3. Diarrhea — 24%\n\n📍 HIGH RISK PINCODES\n781001 · 781017 · 781013\n\nReport submitted to District Health Officer ✓\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nDownload full PDF from Reports section.`,
-  default: `I can assist with hospital-specific queries:\n• Daily case summaries\n• Outbreak risk zone updates\n• Clinical protocols\n• Patient information lookup\n• Report generation\n\nWhat would you like to know?`,
+  "ðŸ“Š Case summary?": `ðŸ“Š Hospital Summary â€” Mar 2026:\n\nðŸ”´ Severe: 8 cases (5 currently hospitalized)\nðŸŸ  Moderate: 24 cases\nðŸŸ¡ Mild: 19 cases\nâœ… Recovered: 16 cases\n\nðŸ“ˆ Total active: 51\nMost common: Cholera (34%) Â· Typhoid (28%)\n\nâš ï¸ Peak day: Mar 7 â€” 18 admissions\n\nOccupancy alert: ICU at 78% capacity.`,
+  "ðŸ—ºï¸ Risk zones?": `ðŸ—ºï¸ Outbreak Hotspots Near Gauhati Medical College:\n\n1. ðŸ”´ Kamrup East (781001) â€” HIGHEST\n   TDS: 842 ppm | pH: 5.2 | Cases: 18 total\n\n2. ðŸ”´ Azara (781017)\n   TDS: 710 ppm | Cases: 14 total\n\n3. ðŸŸ  Jalukbari (781013)\n   TDS: 520 ppm | Cases: 11 total\n\n4. ðŸŸ  Beltola (781028)\n   TDS: 620 ppm | Cases: 9 total\n\n5. ðŸŸ¢ Your Area: Dispur (781005)\n   TDS: 310 ppm | Cases: 4 (low risk)\n\nðŸ“¢ District RRT has been notified for 781001.`,
+  "ðŸ¦  Cholera protocol?": `ðŸ’Š Cholera Clinical Protocol (WHO/ICMR):\n\n1. CONFIRM: Rice-water stools + rapid dehydration\n2. REHYDRATE: IV Ringer's Lactate â€” 100mL/kg in 3 hrs (severe)\n3. ORS: Continue oral â€” 200mL per stool\n4. ANTIBIOTIC: Doxycycline 300mg single dose (adults)\n   Azithromycin 1g for pregnant/children\n5. MONITOR: Vitals q1h for severe cases\n6. ISOLATE: Contact precautions, gloves\n7. REPORT: Submit via Sanjeevani within 24h\n8. TRACE: Identify water source\n\nðŸ“ž District Health Officer: 0361-2XX-XXXX`,
+  "ðŸ§‘â€âš•ï¸ Patient lookup?": `ðŸ§‘â€âš•ï¸ Recent Patients â€” Last 7 Days:\n\nP-001 â€” Arun Kalita, 45M Â· Mar 8\n   Suspected Cholera Â· Under Treatment\n\nP-002 â€” Sunita Borah, 32F Â· Mar 7\n   Cholera (confirmed) Â· Hospitalized\n\nP-003 â€” Manish Gogoi, 67M Â· Mar 7\n   Typhoid Â· Hospitalized â€” watch BP\n\nP-008 â€” Rekha Baruah, 55F Â· Mar 3\n   Cholera Â· ICU â€” critical\n\nTo view full records, navigate to Patients section.`,
+  "ðŸ“‹ Generate report?": `ðŸ“‹ Monthly Report â€” March 2026:\n\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\nGAUHATI MEDICAL COLLEGE\nDisease Surveillance Report Â· Q1 2026\n\nðŸ“Š SUMMARY\nâ€¢ Total Cases: 67\nâ€¢ Severe: 8 | Moderate: 24 | Mild: 19 | Recovered: 16\nâ€¢ Recovery Rate: 76%\nâ€¢ Avg Hospitalization Duration: 4.2 days\n\nðŸ¦  TOP DISEASES\n1. Cholera â€” 34%\n2. Typhoid â€” 28%\n3. Diarrhea â€” 24%\n\nðŸ“ HIGH RISK PINCODES\n781001 Â· 781017 Â· 781013\n\nReport submitted to District Health Officer âœ“\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\nDownload full PDF from Reports section.`,
+  default: `I can assist with hospital-specific queries:\nâ€¢ Daily case summaries\nâ€¢ Outbreak risk zone updates\nâ€¢ Clinical protocols\nâ€¢ Patient information lookup\nâ€¢ Report generation\n\nWhat would you like to know?`,
 };
 
 const INITIAL_MESSAGES: Message[] = [
-  { id: 1, side: "bot", text: "Hello! 👋 Here's your hospital summary:\n\n🏥 Gauhati Medical College · 781005\n🦠 Active Cases: 67\n🔴 Severe: 8 · Hospitalized: 5\n📍 Nearest High Risk Zone: 781001\n\nHow can I assist you today?" },
+  { id: 1, side: "bot", text: "Hello! ðŸ‘‹ Here's your hospital summary:\n\nðŸ¥ Gauhati Medical College Â· 781005\nðŸ¦  Active Cases: 67\nðŸ”´ Severe: 8 Â· Hospitalized: 5\nðŸ“ Nearest High Risk Zone: 781001\n\nHow can I assist you today?" },
 ];
 
 export default function HospChat() {
@@ -29,7 +29,7 @@ export default function HospChat() {
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, isTyping]);
 
   const GEMINI_API_KEY =
-    import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyA9n_DHvPsrrVJJR7NobmtfMAsNrb0U5Z4";
+    import.meta.env.VITE_GEMINI_API_KEY;
 
   const send = async (text: string) => {
     if (!text.trim()) return;
@@ -37,8 +37,14 @@ export default function HospChat() {
     setInput("");
     setIsTyping(true);
 
+    if (!GEMINI_API_KEY) {
+      setMessages(m => [...m, { id: Date.now() + 1, side: "bot", text: "Demo chat is not configured on this device." }]);
+      setIsTyping(false);
+      return;
+    }
+
     try {
-      const systemInstruction = "You are the Sanjeevani AI Assistant optimized for Hospital staff (Gauhati Medical College · 781005). Provide clinical protocols, disease summaries, hospital resource management advice, and outbreak tracking insights. Keep answers highly professional, medical-focused, and concise. Format with emojis where appropriate.";
+      const systemInstruction = "You are the Sanjeevani AI Assistant optimized for Hospital staff (Gauhati Medical College Â· 781005). Provide clinical protocols, disease summaries, hospital resource management advice, and outbreak tracking insights. Keep answers highly professional, medical-focused, and concise. Format with emojis where appropriate.";
       
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
         method: "POST",
@@ -67,9 +73,8 @@ export default function HospChat() {
       <div className="mb-5">
         <h2 className="font-display text-[24px] font-bold text-[#0D1F1A]">Sanjeevani AI Assistant</h2>
         <div className="flex items-center gap-2 mt-1">
-          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-sm text-green-600 font-medium">Online ·</span>
-          <span className="text-sm text-gray-500">Hospital-optimized AI</span>
+          <span className="w-2 h-2 rounded-full bg-amber-500" />
+          <span className="text-sm text-gray-600 font-medium">{GEMINI_API_KEY ? "Demo key configured" : "Demo chat unavailable"}</span>
         </div>
       </div>
 
@@ -112,7 +117,7 @@ export default function HospChat() {
           {/* Input */}
           <div className="p-4 border-t border-gray-100 flex gap-3">
             <input type="text" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send(input)}
-              placeholder="Ask about cases, protocols, patients, or reports…"
+              placeholder="Ask about cases, protocols, patients, or reportsâ€¦"
               className="flex-1 px-4 py-2.5 rounded-full border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1565C0]/20" />
             <button onClick={() => send(input)} className="w-10 h-10 rounded-full bg-[#1565C0] text-white flex items-center justify-center hover:bg-blue-900 transition-colors shrink-0">
               <Send className="w-4 h-4" />
@@ -137,8 +142,8 @@ export default function HospChat() {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
             <h4 className="font-display font-bold text-[#0D1F1A] mb-3 text-sm">Clinical Protocols</h4>
             <div className="space-y-2">
-              {[{ icon: "🦠", label: "Cholera Treatment →", color: "#E53935" }, { icon: "🤒", label: "Typhoid Management →", color: "#FB8C00" }, { icon: "💧", label: "Dehydration Protocol →", color: "#1565C0" }, { icon: "🏥", label: "Isolation Guidelines →", color: "#43A047" }].map(p => (
-                <button key={p.label} onClick={() => send("🦠 Cholera protocol?")}
+              {[{ icon: "ðŸ¦ ", label: "Cholera Treatment â†’", color: "#E53935" }, { icon: "ðŸ¤’", label: "Typhoid Management â†’", color: "#FB8C00" }, { icon: "ðŸ’§", label: "Dehydration Protocol â†’", color: "#1565C0" }, { icon: "ðŸ¥", label: "Isolation Guidelines â†’", color: "#43A047" }].map(p => (
+                <button key={p.label} onClick={() => send("ðŸ¦  Cholera protocol?")}
                   className="w-full flex items-center gap-2.5 py-2 px-3 rounded-xl text-left text-xs font-semibold hover:bg-gray-50 transition-colors border border-gray-100" style={{ color: p.color }}>
                   <span>{p.icon}</span>{p.label}
                 </button>
@@ -149,7 +154,7 @@ export default function HospChat() {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
             <h4 className="font-display font-bold text-[#0D1F1A] mb-3 text-sm">Emergency Contacts</h4>
             <div className="space-y-2.5">
-              {[{ icon: "🏛️", label: "District Health Officer", number: "0361-2XX-XXXX" }, { icon: "🏥", label: "NHM Assam", number: "1800-XXX-XXXX" }, { icon: "🚑", label: "Ambulance", number: "108" }].map(c => (
+              {[{ icon: "ðŸ›ï¸", label: "District Health Officer", number: "0361-2XX-XXXX" }, { icon: "ðŸ¥", label: "NHM Assam", number: "1800-XXX-XXXX" }, { icon: "ðŸš‘", label: "Ambulance", number: "108" }].map(c => (
                 <div key={c.label} className="flex items-center justify-between">
                   <div className="flex items-center gap-2"><span>{c.icon}</span><span className="text-xs font-medium text-[#0D1F1A]">{c.label}</span></div>
                   <span className="text-xs font-mono text-[#1565C0] font-semibold">{c.number}</span>

@@ -30,27 +30,28 @@ function RiskMap() {
         {MAP_MARKERS.map((m) => {
           const { x, y } = toXY(m.lat, m.lng, W, H);
           const isActive = active === m.pincode;
-          const color = (m as any).isHospital ? "#1565C0" : RISK_COLOR[m.risk];
+          const isHospital = "isHospital" in m && m.isHospital;
+          const color = isHospital ? "#1565C0" : RISK_COLOR[m.risk];
           return (
             <g key={m.pincode} onClick={() => setActive(isActive ? null : m.pincode)} style={{ cursor: "pointer" }}>
-              {m.risk === "HIGH" && !(m as any).isHospital && (
+              {m.risk === "HIGH" && !isHospital && (
                 <circle cx={x} cy={y} r={m.radius * 1.5} fill={color} opacity={0.07}>
                   <animate attributeName="r" values={`${m.radius};${m.radius * 1.9};${m.radius}`} dur="2.5s" repeatCount="indefinite" />
                   <animate attributeName="opacity" values="0.12;0;0.12" dur="2.5s" repeatCount="indefinite" />
                 </circle>
               )}
-              {(m as any).isHospital && (
+              {isHospital && (
                 <circle cx={x} cy={y} r={m.radius * 1.6} fill="#1565C0" opacity={0.08}>
                   <animate attributeName="r" values={`${m.radius * 1.2};${m.radius * 1.8};${m.radius * 1.2}`} dur="2s" repeatCount="indefinite" />
                 </circle>
               )}
               <circle cx={x} cy={y} r={isActive ? m.radius + 4 : m.radius}
-                fill={(m as any).isHospital ? "#1565C0" : color} opacity={0.75}
-                stroke="white" strokeWidth={(m as any).isHospital ? 3 : 2} style={{ transition: "all 0.2s" }} />
+                fill={isHospital ? "#1565C0" : color} opacity={0.75}
+                stroke="white" strokeWidth={isHospital ? 3 : 2} style={{ transition: "all 0.2s" }} />
               <text x={x} y={y} textAnchor="middle" dominantBaseline="middle" fontSize="10" fill="white" fontFamily="DM Sans,sans-serif">
-                {(m as any).isHospital ? "🏥" : ""}
+                {isHospital ? "🏥" : ""}
               </text>
-              <text x={x} y={y - m.radius - 5} textAnchor="middle" fontSize="8" fontFamily="DM Sans,sans-serif" fontWeight="700" fill={(m as any).isHospital ? "#1565C0" : color}>
+              <text x={x} y={y - m.radius - 5} textAnchor="middle" fontSize="8" fontFamily="DM Sans,sans-serif" fontWeight="700" fill={isHospital ? "#1565C0" : color}>
                 {m.name}
               </text>
               {isActive && (
@@ -82,12 +83,18 @@ function RiskMap() {
 }
 
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
-function CustomTooltip({ active, payload, label }: any) {
+type ChartTooltipProps = {
+  active?: boolean;
+  payload?: Array<{ dataKey?: string | number; name?: string | number; value?: string | number; color?: string }>;
+  label?: string | number;
+};
+
+function CustomTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 px-4 py-3 text-xs">
       <p className="font-bold text-[#0D1F1A] mb-1">{label}</p>
-      {payload.map((p: any) => (
+      {payload.map((p) => (
         <p key={p.dataKey} style={{ color: p.color }}>{p.name}: <span className="font-mono font-bold">{p.value}</span></p>
       ))}
     </div>

@@ -84,7 +84,7 @@ function OnboardingStrip() {
 
   const dismiss = () => {
     setDismissed(true);
-    try { localStorage.setItem("hosp_onboard_dismissed", "true"); } catch {}
+    try { localStorage.setItem("hosp_onboard_dismissed", "true"); } catch { /* Storage may be unavailable in private mode. */ }
   };
 
   if (dismissed) return null;
@@ -96,7 +96,7 @@ function OnboardingStrip() {
       <span className="text-2xl shrink-0">🏥</span>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-[#1565C0]">Your Role: Disease Case Reporting & Patient Monitoring</p>
-        <p className="text-xs text-[#1565C0]/70 mt-0.5">Cases you report feed directly into the Sanjeevani AI model to detect and predict outbreaks across Northeast India.</p>
+        <p className="text-xs text-[#1565C0]/70 mt-0.5">This dashboard uses sample cases. The separate ML Lab displays saved synthetic experiments.</p>
       </div>
       <button className="text-xs font-semibold text-[#1565C0] hover:underline shrink-0">Learn More</button>
       <button onClick={dismiss} className="p-1 rounded-lg hover:bg-blue-100 text-[#1565C0]/60 hover:text-[#1565C0] transition-colors shrink-0">
@@ -196,6 +196,11 @@ export default function HospitalDashboard() {
             </button>
           </div>
         </header>
+
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-amber-200 bg-amber-50 px-5 py-2 text-xs text-amber-950">
+          <span><strong>Demo UI:</strong> cases, alerts and reports here are sample content.</span>
+          <button type="button" onClick={() => navigate("/ml-lab")} className="font-semibold underline">Open synthetic ML Lab</button>
+        </div>
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto p-8">

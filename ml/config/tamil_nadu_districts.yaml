@@ -1,0 +1,475 @@
+# Tamil Nadu Geographical & Administrative Units (43 Units)
+units:
+  - id: TN_01
+    name: Chengalpattu_Potheri
+    type: peri_urban_cluster
+    population: 185000
+    density_km2: 4200
+    lat: 12.8231
+    lon: 80.0442
+    coastal: false
+    water_sources: {piped: 0.45, groundwater: 0.40, tanker: 0.15}
+    sanitation_coverage: 0.78
+    neighbors: [TN_02, TN_03, TN_04, TN_08]
+  - id: TN_02
+    name: Chengalpattu_Guduvancheri
+    type: peri_urban_cluster
+    population: 210000
+    density_km2: 4500
+    lat: 12.8439
+    lon: 80.0593
+    coastal: false
+    water_sources: {piped: 0.50, groundwater: 0.35, tanker: 0.15}
+    sanitation_coverage: 0.76
+    neighbors: [TN_01, TN_03, TN_04, TN_07]
+  - id: TN_03
+    name: Chengalpattu_Urban
+    type: urban_district_hq
+    population: 320000
+    density_km2: 3800
+    lat: 12.6819
+    lon: 79.9888
+    coastal: false
+    water_sources: {piped: 0.60, groundwater: 0.30, surface: 0.10}
+    sanitation_coverage: 0.82
+    neighbors: [TN_01, TN_02, TN_04, TN_08, TN_14, TN_16]
+  - id: TN_04
+    name: Chengalpattu_Tambaram
+    type: urban_major
+    population: 480000
+    density_km2: 6800
+    lat: 12.9249
+    lon: 80.1000
+    coastal: false
+    water_sources: {piped: 0.65, groundwater: 0.25, tanker: 0.10}
+    sanitation_coverage: 0.88
+    neighbors: [TN_01, TN_02, TN_03, TN_07, TN_08]
+  - id: TN_05
+    name: Chennai_North
+    type: metro_dense
+    population: 1450000
+    density_km2: 24000
+    lat: 13.1143
+    lon: 80.2872
+    coastal: true
+    water_sources: {piped: 0.70, groundwater: 0.15, tanker: 0.15}
+    sanitation_coverage: 0.86
+    neighbors: [TN_06, TN_09]
+  - id: TN_06
+    name: Chennai_Central
+    type: metro_dense
+    population: 1600000
+    density_km2: 26000
+    lat: 13.0827
+    lon: 80.2707
+    coastal: true
+    water_sources: {piped: 0.75, groundwater: 0.10, tanker: 0.15}
+    sanitation_coverage: 0.90
+    neighbors: [TN_05, TN_07, TN_09]
+  - id: TN_07
+    name: Chennai_South
+    type: metro_dense
+    population: 1800000
+    density_km2: 21000
+    lat: 12.9800
+    lon: 80.2200
+    coastal: true
+    water_sources: {piped: 0.72, groundwater: 0.13, tanker: 0.15}
+    sanitation_coverage: 0.91
+    neighbors: [TN_04, TN_06, TN_08]
+  - id: TN_08
+    name: Kanchipuram
+    type: mixed_rural_urban
+    population: 1160000
+    density_km2: 950
+    lat: 12.8342
+    lon: 79.7036
+    coastal: false
+    water_sources: {piped: 0.55, groundwater: 0.35, surface: 0.10}
+    sanitation_coverage: 0.77
+    neighbors: [TN_01, TN_03, TN_04, TN_07, TN_09, TN_10, TN_11, TN_13]
+  - id: TN_09
+    name: Tiruvallur
+    type: mixed_rural_urban
+    population: 1580000
+    density_km2: 1100
+    lat: 13.1438
+    lon: 79.9082
+    coastal: true
+    water_sources: {piped: 0.58, groundwater: 0.32, surface: 0.10}
+    sanitation_coverage: 0.79
+    neighbors: [TN_05, TN_06, TN_08, TN_11]
+  - id: TN_10
+    name: Vellore
+    type: urban_district
+    population: 1120000
+    density_km2: 1200
+    lat: 12.9165
+    lon: 79.1325
+    coastal: false
+    water_sources: {piped: 0.52, groundwater: 0.40, surface: 0.08}
+    sanitation_coverage: 0.75
+    neighbors: [TN_08, TN_11, TN_12, TN_13]
+  - id: TN_11
+    name: Ranipet
+    type: mixed_industrial
+    population: 820000
+    density_km2: 980
+    lat: 12.9272
+    lon: 79.3331
+    coastal: false
+    water_sources: {piped: 0.50, groundwater: 0.42, surface: 0.08}
+    sanitation_coverage: 0.74
+    neighbors: [TN_08, TN_09, TN_10, TN_13]
+  - id: TN_12
+    name: Tirupathur
+    type: rural_hills
+    population: 740000
+    density_km2: 650
+    lat: 12.4926
+    lon: 78.5678
+    coastal: false
+    water_sources: {piped: 0.48, groundwater: 0.45, surface: 0.07}
+    sanitation_coverage: 0.70
+    neighbors: [TN_10, TN_13, TN_20]
+  - id: TN_13
+    name: Tiruvannamalai
+    type: rural_agricultural
+    population: 1460000
+    density_km2: 520
+    lat: 12.2253
+    lon: 79.0747
+    coastal: false
+    water_sources: {piped: 0.46, groundwater: 0.46, surface: 0.08}
+    sanitation_coverage: 0.69
+    neighbors: [TN_08, TN_10, TN_11, TN_12, TN_14, TN_15, TN_17]
+  - id: TN_14
+    name: Viluppuram
+    type: agricultural
+    population: 1350000
+    density_km2: 610
+    lat: 11.9401
+    lon: 79.4861
+    coastal: true
+    water_sources: {piped: 0.52, groundwater: 0.38, surface: 0.10}
+    sanitation_coverage: 0.72
+    neighbors: [TN_03, TN_13, TN_15, TN_16]
+  - id: TN_15
+    name: Kallakurichi
+    type: rural
+    population: 980000
+    density_km2: 480
+    lat: 11.7383
+    lon: 78.9639
+    coastal: false
+    water_sources: {piped: 0.45, groundwater: 0.48, surface: 0.07}
+    sanitation_coverage: 0.68
+    neighbors: [TN_13, TN_14, TN_16, TN_17, TN_25]
+  - id: TN_16
+    name: Cuddalore
+    type: coastal_delta
+    population: 1680000
+    density_km2: 780
+    lat: 11.7480
+    lon: 79.7714
+    coastal: true
+    water_sources: {piped: 0.54, groundwater: 0.36, surface: 0.10}
+    sanitation_coverage: 0.74
+    neighbors: [TN_03, TN_14, TN_15, TN_28, TN_29, TN_33]
+  - id: TN_17
+    name: Salem
+    type: urban_industrial
+    population: 2240000
+    density_km2: 1150
+    lat: 11.6643
+    lon: 78.1460
+    coastal: false
+    water_sources: {piped: 0.62, groundwater: 0.32, surface: 0.06}
+    sanitation_coverage: 0.81
+    neighbors: [TN_13, TN_15, TN_18, TN_19, TN_21]
+  - id: TN_18
+    name: Namakkal
+    type: agricultural_poultry
+    population: 1180000
+    density_km2: 580
+    lat: 11.2189
+    lon: 78.1674
+    coastal: false
+    water_sources: {piped: 0.55, groundwater: 0.38, surface: 0.07}
+    sanitation_coverage: 0.76
+    neighbors: [TN_17, TN_21, TN_26, TN_27]
+  - id: TN_19
+    name: Dharmapuri
+    type: rural_hills
+    population: 990000
+    density_km2: 460
+    lat: 12.1211
+    lon: 78.1582
+    coastal: false
+    water_sources: {piped: 0.44, groundwater: 0.50, surface: 0.06}
+    sanitation_coverage: 0.66
+    neighbors: [TN_17, TN_20, TN_21]
+  - id: TN_20
+    name: Krishnagiri
+    type: mixed_industrial
+    population: 1240000
+    density_km2: 540
+    lat: 12.5186
+    lon: 78.2137
+    coastal: false
+    water_sources: {piped: 0.50, groundwater: 0.44, surface: 0.06}
+    sanitation_coverage: 0.71
+    neighbors: [TN_12, TN_19]
+  - id: TN_21
+    name: Erode
+    type: industrial_agricultural
+    population: 1540000
+    density_km2: 690
+    lat: 11.3410
+    lon: 77.7172
+    coastal: false
+    water_sources: {piped: 0.64, groundwater: 0.28, surface: 0.08}
+    sanitation_coverage: 0.82
+    neighbors: [TN_17, TN_18, TN_19, TN_22, TN_26]
+  - id: TN_22
+    name: Tiruppur
+    type: textile_urban
+    population: 1720000
+    density_km2: 1250
+    lat: 11.1085
+    lon: 77.3411
+    coastal: false
+    water_sources: {piped: 0.68, groundwater: 0.24, tanker: 0.08}
+    sanitation_coverage: 0.84
+    neighbors: [TN_21, TN_23, TN_25, TN_26]
+  - id: TN_23
+    name: Coimbatore
+    type: major_urban
+    population: 2600000
+    density_km2: 1600
+    lat: 11.0168
+    lon: 76.9558
+    coastal: false
+    water_sources: {piped: 0.72, groundwater: 0.22, surface: 0.06}
+    sanitation_coverage: 0.89
+    neighbors: [TN_22, TN_24, TN_25]
+  - id: TN_24
+    name: Nilgiris
+    type: hill_plantation
+    population: 520000
+    density_km2: 290
+    lat: 11.4102
+    lon: 76.6950
+    coastal: false
+    water_sources: {piped: 0.58, groundwater: 0.22, surface: 0.20}
+    sanitation_coverage: 0.87
+    neighbors: [TN_21, TN_23]
+  - id: TN_25
+    name: Dindigul
+    type: mixed_agrarian
+    population: 1420000
+    density_km2: 490
+    lat: 10.3673
+    lon: 77.9803
+    coastal: false
+    water_sources: {piped: 0.53, groundwater: 0.40, surface: 0.07}
+    sanitation_coverage: 0.73
+    neighbors: [TN_15, TN_22, TN_23, TN_26, TN_27, TN_36, TN_37]
+  - id: TN_26
+    name: Karur
+    type: semi_arid_textile
+    population: 710000
+    density_km2: 440
+    lat: 10.9601
+    lon: 78.0766
+    coastal: false
+    water_sources: {piped: 0.58, groundwater: 0.35, surface: 0.07}
+    sanitation_coverage: 0.78
+    neighbors: [TN_18, TN_21, TN_22, TN_25, TN_27]
+  - id: TN_27
+    name: Tiruchirappalli
+    type: major_urban_delta
+    population: 1890000
+    density_km2: 920
+    lat: 10.7905
+    lon: 78.7047
+    coastal: false
+    water_sources: {piped: 0.67, groundwater: 0.26, surface: 0.07}
+    sanitation_coverage: 0.85
+    neighbors: [TN_18, TN_25, TN_26, TN_28, TN_29, TN_30, TN_34]
+  - id: TN_28
+    name: Perambalur
+    type: rural
+    population: 430000
+    density_km2: 380
+    lat: 11.2342
+    lon: 78.8820
+    coastal: false
+    water_sources: {piped: 0.46, groundwater: 0.48, surface: 0.06}
+    sanitation_coverage: 0.71
+    neighbors: [TN_16, TN_27, TN_29]
+  - id: TN_29
+    name: Ariyalur
+    type: mining_rural
+    population: 520000
+    density_km2: 420
+    lat: 11.1401
+    lon: 79.0786
+    coastal: false
+    water_sources: {piped: 0.48, groundwater: 0.45, surface: 0.07}
+    sanitation_coverage: 0.70
+    neighbors: [TN_16, TN_27, TN_28, TN_30, TN_33]
+  - id: TN_30
+    name: Thanjavur
+    type: delta_agricultural
+    population: 1540000
+    density_km2: 680
+    lat: 10.7870
+    lon: 79.1378
+    coastal: true
+    water_sources: {piped: 0.60, groundwater: 0.32, surface: 0.08}
+    sanitation_coverage: 0.79
+    neighbors: [TN_27, TN_29, TN_31, TN_34]
+  - id: TN_31
+    name: Tiruvarur
+    type: delta_agricultural
+    population: 860000
+    density_km2: 590
+    lat: 10.7725
+    lon: 79.6365
+    coastal: true
+    water_sources: {piped: 0.58, groundwater: 0.32, surface: 0.10}
+    sanitation_coverage: 0.77
+    neighbors: [TN_30, TN_32, TN_33]
+  - id: TN_32
+    name: Nagapattinam
+    type: coastal
+    population: 690000
+    density_km2: 580
+    lat: 10.7672
+    lon: 79.8449
+    coastal: true
+    water_sources: {piped: 0.56, groundwater: 0.34, surface: 0.10}
+    sanitation_coverage: 0.76
+    neighbors: [TN_31, TN_33, TN_34]
+  - id: TN_33
+    name: Mayiladuthurai
+    type: delta_coastal
+    population: 640000
+    density_km2: 640
+    lat: 11.1075
+    lon: 79.6523
+    coastal: true
+    water_sources: {piped: 0.55, groundwater: 0.35, surface: 0.10}
+    sanitation_coverage: 0.75
+    neighbors: [TN_16, TN_29, TN_31, TN_32]
+  - id: TN_34
+    name: Pudukkottai
+    type: rural_semi_arid
+    population: 1020000
+    density_km2: 450
+    lat: 10.3833
+    lon: 78.8001
+    coastal: true
+    water_sources: {piped: 0.50, groundwater: 0.44, surface: 0.06}
+    sanitation_coverage: 0.72
+    neighbors: [TN_27, TN_30, TN_32, TN_35]
+  - id: TN_35
+    name: Sivaganga
+    type: dry_rural
+    population: 910000
+    density_km2: 410
+    lat: 9.8433
+    lon: 78.4809
+    coastal: false
+    water_sources: {piped: 0.49, groundwater: 0.46, surface: 0.05}
+    sanitation_coverage: 0.71
+    neighbors: [TN_34, TN_36, TN_38, TN_39]
+  - id: TN_36
+    name: Madurai
+    type: major_heritage_urban
+    population: 2150000
+    density_km2: 1850
+    lat: 9.9252
+    lon: 78.1198
+    coastal: false
+    water_sources: {piped: 0.68, groundwater: 0.24, surface: 0.08}
+    sanitation_coverage: 0.86
+    neighbors: [TN_25, TN_35, TN_37, TN_38]
+  - id: TN_37
+    name: Theni
+    type: valley_agriculture
+    population: 830000
+    density_km2: 440
+    lat: 10.0104
+    lon: 77.4768
+    coastal: false
+    water_sources: {piped: 0.54, groundwater: 0.36, surface: 0.10}
+    sanitation_coverage: 0.77
+    neighbors: [TN_25, TN_36, TN_38]
+  - id: TN_38
+    name: Virudhunagar
+    type: industrial_semi_arid
+    population: 1280000
+    density_km2: 520
+    lat: 9.5872
+    lon: 77.9514
+    coastal: false
+    water_sources: {piped: 0.52, groundwater: 0.42, surface: 0.06}
+    sanitation_coverage: 0.74
+    neighbors: [TN_35, TN_36, TN_37, TN_39, TN_40, TN_41]
+  - id: TN_39
+    name: Ramanathapuram
+    type: coastal_drought_prone
+    population: 950000
+    density_km2: 390
+    lat: 9.3639
+    lon: 78.8395
+    coastal: true
+    water_sources: {piped: 0.42, groundwater: 0.48, tanker: 0.10}
+    sanitation_coverage: 0.68
+    neighbors: [TN_35, TN_38, TN_40]
+  - id: TN_40
+    name: Thoothukudi
+    type: port_coastal
+    population: 1220000
+    density_km2: 560
+    lat: 8.7642
+    lon: 78.1348
+    coastal: true
+    water_sources: {piped: 0.59, groundwater: 0.33, surface: 0.08}
+    sanitation_coverage: 0.79
+    neighbors: [TN_38, TN_39, TN_41]
+  - id: TN_41
+    name: Tirunelveli
+    type: southern_urban_river
+    population: 1180000
+    density_km2: 720
+    lat: 8.7139
+    lon: 77.7567
+    coastal: false
+    water_sources: {piped: 0.63, groundwater: 0.28, surface: 0.09}
+    sanitation_coverage: 0.81
+    neighbors: [TN_38, TN_40, TN_42, TN_43]
+  - id: TN_42
+    name: Tenkasi
+    type: foothill_agrarian
+    population: 940000
+    density_km2: 510
+    lat: 8.9594
+    lon: 77.3150
+    coastal: false
+    water_sources: {piped: 0.56, groundwater: 0.34, surface: 0.10}
+    sanitation_coverage: 0.77
+    neighbors: [TN_41, TN_43]
+  - id: TN_43
+    name: Kanniyakumari
+    type: southern_tip_coastal
+    population: 1280000
+    density_km2: 1100
+    lat: 8.0883
+    lon: 77.5385
+    coastal: true
+    water_sources: {piped: 0.68, groundwater: 0.24, surface: 0.08}
+    sanitation_coverage: 0.94
+    neighbors: [TN_41, TN_42]
