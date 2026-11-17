@@ -6,7 +6,7 @@ Edit the existing PowerPoint at `D:\ML for dataScience\ML PPT TEMPLATE.pdf.pptx`
 
 The repository root in this workspace is `D:\ML for dataScience\github_sanjeevani`. Paths below are relative to that directory unless an absolute path is shown. A teammate's clone can use the same relative paths.
 
-The current paper at `D:\ML for dataScience\paper_fixed4.docx` and the repository copy `paper_fixed4.docx` already match the PPT cover title and team. **Use this exact title and roster in the deck and paper:**
+The current paper at `D:\ML for dataScience\paper_fixed4.docx` and the repository copy `docs/paper_fixed4.docx` already match the PPT cover title and team. **Use this exact title and roster in the deck and paper:**
 
 **Title:** Sanjeevani: Early Warning of Water-Borne Disease Risk Using Machine Learning
 
@@ -22,7 +22,7 @@ The source cover omits a closing parenthesis for Ayush. Correct that typographic
 
 ## Source of truth
 
-- Project explanation and reproduction instructions: `SANJEEVANI_ML_PROJECT.md` and the matching PDF.
+- Project explanation and reproduction instructions: `docs/SANJEEVANI_ML_PROJECT.md` and the matching PDF in `docs/`.
 - Synthetic-data declaration: `ml/data_provenance.json` (`classification: SYNTHETIC`, `real_world_validation: false`).
 - Completed run configuration: `ml/config/smoke.yaml` (train seed 1001, validation 2001, test 3001).
 - Configured but **unexecuted** larger study: `ml/config/simulation_config.yaml` (20 train, five validation, ten test worlds).
@@ -33,7 +33,7 @@ The source cover omits a closing parenthesis for Ayush. Correct that typographic
 - Reproducibility details and artifact hashes: `ml/runs/smoke-final-20261104T045840Z/provenance_manifest.json` and `ml/runs/smoke-final-20261104T045840Z/results/run_manifest.json`.
 - ML implementation: `ml/sanjeevani_sim/` and `ml/sanjeevani_ml/`.
 - Demonstration: `src/pages/SimulationLab.tsx` and `ml/service.py`.
-- The revised research paper: `paper_fixed4.docx`.
+- The revised research paper: `docs/paper_fixed4.docx`.
 
 The historical EpiClim/IDSP, NFHS-5, NASA POWER, and old water-quality CSV files elsewhere in the workspace are background material from earlier exploration. They are **not** features, labels, or a real-data test for this final synthetic study.
 

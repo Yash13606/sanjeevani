@@ -34,3 +34,7 @@ ml/results/
 *.njsproj
 *.sln
 *.sw?
+
+# Local working folders (Colab downloads, superseded files)
+results/
+archive/
