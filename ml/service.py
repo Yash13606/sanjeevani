@@ -29,6 +29,13 @@ ALLOWED_ORIGINS = {
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 }
+# Vite moves to the next free port (8081, 5174, ...) when 8080 or 5173 is taken, for example by Docker. Any port on
+# this computer's own address is therefore allowed; every other origin is still refused.
+_LOCAL_ORIGIN = re.compile(r"^http://(localhost|127\.0\.0\.1)(:\d{1,5})?$")
+
+
+def _origin_allowed(origin: str | None) -> bool:
+    return bool(origin) and (origin in ALLOWED_ORIGINS or _LOCAL_ORIGIN.match(origin) is not None)
 
 
 def _find_run(explicit: Path | None) -> Path | None:
@@ -494,7 +501,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
         origin = self.headers.get("Origin")
-        if origin in ALLOWED_ORIGINS:
+        if _origin_allowed(origin):
             self.send_header("Access-Control-Allow-Origin", origin)
             self.send_header("Vary", "Origin")
         self.end_headers()

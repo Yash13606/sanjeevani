@@ -224,3 +224,12 @@ def test_incomplete_run_is_unavailable(tmp_path: Path):
         server.server_close()
         thread.join(timeout=5)
         Handler.run_dir = None
+
+
+def test_any_local_port_is_allowed_but_no_other_origin():
+    from service import _origin_allowed
+
+    for origin in ("http://localhost:8080", "http://127.0.0.1:5173", "http://localhost:8081", "http://127.0.0.1:5174", "http://localhost"):
+        assert _origin_allowed(origin), origin
+    for origin in ("https://example.com", "http://evil.localhost:8080", "http://localhost.evil.com", "http://192.168.1.5:8080", None, ""):
+        assert not _origin_allowed(origin), origin
