@@ -1,15 +1,21 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CheckCircle } from "lucide-react";
-import { ALL_CASES, PATIENTS_DATA, SEV_COLOR, SEV_BG, SEV_EMOJI, type Severity } from "../hospitalData";
+import {
+  ALL_CASES, CASE_DISEASES, MODELED_DISEASES, PATIENTS_DATA, SEV_COLOR, SEV_BG, SEV_EMOJI, countBy,
+  type CaseDisease, type HospitalCase, type Severity,
+} from "../hospitalData";
+import { TierBadge } from "@/components/ml/TierBadge";
+import { useMl } from "@/lib/ml/MlContext";
+import { TASK_META, formatScore, unitName, unitScore, unitTier } from "@/lib/ml/risk";
 
-type Case = typeof ALL_CASES[number];
 type SevFilter = "ALL" | Severity;
-const DISEASES = ["All", "Cholera", "Typhoid", "Gastroenteritis", "Hepatitis A", "Other"];
+type DiseaseFilter = "All" | CaseDisease;
 const SYMPTOM_LIST = ["Diarrhea", "Vomiting", "Fever", "Weakness", "Jaundice", "Dehydration", "Abdominal pain", "Skin rash", "Blood in stool", "Headache"];
 
 // ─── Report Case Modal ────────────────────────────────────────────────────────
 function ReportCaseModal({ onClose }: { onClose: () => void }) {
+  const { units, homeUnit } = useMl();
   const [linkPatient, setLinkPatient] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [symptoms, setSymptoms] = useState<string[]>([]);
@@ -22,17 +28,17 @@ function ReportCaseModal({ onClose }: { onClose: () => void }) {
         className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
           <h2 className="font-display text-xl font-bold text-[#0D1F1A]">🦠 Report New Case</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400" aria-label="Close"><X className="w-5 h-5" /></button>
         </div>
         {submitted ? (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
             <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4"><CheckCircle className="w-9 h-9 text-[#43A047]" /></div>
-            <h3 className="font-display text-xl font-bold text-[#0D1F1A] mb-1">Case CASE-068 Reported!</h3>
-            <p className="text-sm text-gray-500 mb-1">Successfully submitted to Sanjeevani network.</p>
-            <p className="text-xs text-[#1565C0] font-medium mb-6">This data will be used for AI outbreak prediction</p>
+            <h3 className="font-display text-xl font-bold text-[#0D1F1A] mb-1">Case entry saved</h3>
+            <p className="text-sm text-gray-500 mb-1">Reference: <span className="font-mono font-bold">CASE-068</span></p>
+            <p className="text-xs text-gray-500 mb-6 max-w-xs">Demo form: nothing is sent anywhere. In the simulation, reported case counts are one of the weekly inputs the model reads.</p>
             <div className="flex gap-3 w-full max-w-xs">
-              <button onClick={() => setSubmitted(false)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">Report Another</button>
-              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-[#E53935] text-white text-sm font-semibold">View Case</button>
+              <button onClick={() => setSubmitted(false)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">Add Another</button>
+              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-[#E53935] text-white text-sm font-semibold">Close</button>
             </div>
           </div>
         ) : (
@@ -84,16 +90,20 @@ function ReportCaseModal({ onClose }: { onClose: () => void }) {
 
             {/* Disease */}
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1.5">Suspected Disease</label>
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5">Suspected Condition</label>
               <select className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none">
-                {DISEASES.slice(1).map(d => <option key={d}>{d}</option>)}
+                {CASE_DISEASES.map(d => <option key={d}>{d}</option>)}
               </select>
+              <p className="mt-1 text-[10px] text-gray-400">The Sanjeevani model covers cholera and acute diarrheal disease only.</p>
             </div>
 
-            {/* Pincode */}
+            {/* Unit */}
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1.5">Location Pincode</label>
-              <input defaultValue="781005" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none" maxLength={6} />
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5">Patient&apos;s Area (synthetic unit)</label>
+              <select defaultValue={homeUnit} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none">
+                {units.map(u => <option key={u.unit_id} value={u.unit_id}>{u.name.replace(/_/g, " · ")} ({u.unit_id})</option>)}
+                {units.length === 0 && <option value={homeUnit}>{homeUnit}</option>}
+              </select>
             </div>
 
             {/* Severity */}
@@ -123,10 +133,10 @@ function ReportCaseModal({ onClose }: { onClose: () => void }) {
             {/* Reported by */}
             <div>
               <label className="block text-xs font-semibold text-gray-500 mb-1.5">Reported By</label>
-              <input disabled value="Gauhati Medical College (auto)" className="w-full px-3 py-2.5 rounded-xl border border-gray-100 text-sm text-gray-400 bg-gray-50 cursor-not-allowed" />
+              <input disabled value="Chengalpattu District Hospital (auto)" className="w-full px-3 py-2.5 rounded-xl border border-gray-100 text-sm text-gray-400 bg-gray-50 cursor-not-allowed" />
             </div>
 
-            <button type="submit" className="w-full py-3 rounded-xl bg-[#E53935] text-white text-sm font-semibold hover:bg-red-700 transition-colors">Submit Case Report</button>
+            <button type="submit" className="w-full py-3 rounded-xl bg-[#E53935] text-white text-sm font-semibold hover:bg-red-700 transition-colors">Save Case Entry</button>
           </form>
         )}
       </motion.div>
@@ -135,8 +145,11 @@ function ReportCaseModal({ onClose }: { onClose: () => void }) {
 }
 
 // ─── Case Detail Slide-over ───────────────────────────────────────────────────
-function CaseDetail({ c, onClose }: { c: Case; onClose: () => void }) {
+function CaseDetail({ c, onClose }: { c: HospitalCase; onClose: () => void }) {
+  const { board, units, models } = useMl();
   const [status, setStatus] = useState(c.status);
+  const unit = board?.units.find((u) => u.unit_id === c.unitId);
+  const modeled = MODELED_DISEASES.includes(c.disease);
   const timeline = [
     { label: "Reported", date: `${c.reported} 06:42`, done: true },
     { label: "Diagnosed", date: `${c.reported} 09:15`, done: true },
@@ -154,45 +167,38 @@ function CaseDetail({ c, onClose }: { c: Case; onClose: () => void }) {
             <h2 className="font-display text-xl font-bold text-[#0D1F1A]">Case Details</h2>
             <p className="text-xs text-gray-400 font-mono mt-0.5">{c.id}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400" aria-label="Close"><X className="w-5 h-5" /></button>
         </div>
         {/* Severity banner */}
         <div className="px-6 py-2.5 border-b-2" style={{ background: SEV_BG[c.severity], borderBottomColor: SEV_COLOR[c.severity] }}>
           <p className="font-bold text-sm" style={{ color: SEV_COLOR[c.severity] }}>{SEV_EMOJI[c.severity]} {c.severity} — {c.status}</p>
         </div>
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
-          {/* Patient link */}
           <div className="flex items-center justify-between bg-[#EFF6FF] rounded-xl px-4 py-3">
             <span className="text-xs font-medium text-[#1565C0]">Patient: <strong>{c.patient}</strong>, {c.gender}, {c.age}</span>
-            <button className="text-xs font-semibold text-[#1565C0] hover:underline">View Profile →</button>
           </div>
-          {/* Info grid */}
           <div className="grid grid-cols-2 gap-3">
-            {[{ l: "Disease", v: c.disease }, { l: "Pincode", v: c.pincode }, { l: "Reported", v: c.reported }, { l: "Disease Type", v: c.disease }].map(r => (
+            {[{ l: "Condition", v: c.disease }, { l: "Area (unit)", v: `${unitName(units, c.unitId)} (${c.unitId})` }, { l: "Reported", v: c.reported }, { l: "In model scope", v: modeled ? "Yes" : "No" }].map(r => (
               <div key={r.l} className="bg-gray-50 rounded-xl p-3">
                 <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">{r.l}</p>
                 <p className="text-sm font-semibold text-[#0D1F1A]">{r.v}</p>
               </div>
             ))}
           </div>
-          {/* Symptoms */}
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Symptoms</p>
             <div className="flex flex-wrap gap-2">
               {c.symptoms.map(s => <span key={s} className="px-3 py-1 rounded-full text-xs font-medium bg-[#FFEBEE] text-[#E53935]">{s}</span>)}
             </div>
           </div>
-          {/* Notes */}
           <div className="bg-gray-50 rounded-xl p-4">
             <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Clinical Notes</p>
             <p className="text-sm text-gray-600 leading-relaxed">{c.notes}</p>
           </div>
-          {/* Treatment notes */}
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1.5">Treatment Notes</label>
             <textarea rows={2} className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm resize-none focus:outline-none" placeholder="Add treatment notes…" />
           </div>
-          {/* Status update */}
           {c.severity !== "RECOVERED" && (
             <div className="flex gap-2">
               <select value={status} onChange={e => setStatus(e.target.value)}
@@ -202,7 +208,6 @@ function CaseDetail({ c, onClose }: { c: Case; onClose: () => void }) {
               <button className="px-4 py-2.5 rounded-xl bg-[#1565C0] text-white text-sm font-semibold hover:bg-blue-900 transition-colors">Update</button>
             </div>
           )}
-          {/* Timeline */}
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Status Timeline</p>
             <div className="relative pl-4 space-y-3">
@@ -218,10 +223,29 @@ function CaseDetail({ c, onClose }: { c: Case; onClose: () => void }) {
               ))}
             </div>
           </div>
-          {/* Linked alert */}
-          <div className="bg-[#FFEBEE] rounded-xl p-3 flex items-center justify-between">
-            <p className="text-xs font-semibold text-[#E53935]">🔴 Linked Alert: {c.pincode} HIGH RISK</p>
-            <button className="text-xs font-semibold text-[#E53935] hover:text-red-800">View →</button>
+
+          {/* Model status of the patient's area this week */}
+          <div className="rounded-xl border border-gray-100 p-4">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Area model status this week</p>
+            {unit ? (
+              <div className="space-y-2">
+                {(["m1", "m2"] as const).map((task) => (
+                  <div key={task} className="flex items-center justify-between text-xs">
+                    <span className="text-gray-600">{TASK_META[task].short} · {TASK_META[task].name}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-[#0D1F1A]">{formatScore(unitScore(unit, task))}</span>
+                      <TierBadge tier={unitTier(unit, task)} />
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-500">No saved scores for this unit in the selected week.</p>
+            )}
+            <p className="mt-2 text-[10px] leading-4 text-gray-400">
+              Scores describe the area in the saved synthetic run, not this patient. This case entry is sample content and does not feed the model
+              {models ? ` (${models.m1.model_name}).` : "."}
+            </p>
           </div>
         </div>
       </motion.div>
@@ -231,14 +255,17 @@ function CaseDetail({ c, onClose }: { c: Case; onClose: () => void }) {
 
 // ─── Cases Section ────────────────────────────────────────────────────────────
 export default function HospCases() {
+  const { units } = useMl();
   const [sevFilter, setSevFilter] = useState<SevFilter>("ALL");
-  const [diseaseFilter, setDiseaseFilter] = useState("All");
-  const [selectedCase, setSelectedCase] = useState<Case | null>(null);
+  const [diseaseFilter, setDiseaseFilter] = useState<DiseaseFilter>("All");
+  const [selectedCase, setSelectedCase] = useState<HospitalCase | null>(null);
   const [showReport, setShowReport] = useState(false);
 
+  // A recovered patient is counted under "Recovered" only, so the four cards add up to the number of entries
+  const bySeverity = countBy(ALL_CASES, c => (c.status === "Recovered" ? "RECOVERED" : c.severity));
   const filtered = ALL_CASES.filter(c => {
-    const matchSev = sevFilter === "ALL" || c.severity === sevFilter;
-    const matchDisease = diseaseFilter === "All" || c.disease.includes(diseaseFilter);
+    const matchSev = sevFilter === "ALL" || (c.status === "Recovered" ? "RECOVERED" : c.severity) === sevFilter;
+    const matchDisease = diseaseFilter === "All" || c.disease === diseaseFilter;
     return matchSev && matchDisease;
   });
 
@@ -246,15 +273,23 @@ export default function HospCases() {
     <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-[28px] font-bold text-[#0D1F1A]">Case Management</h2>
+          <div>
+            <h2 className="font-display text-[28px] font-bold text-[#0D1F1A]">Case Management</h2>
+            <p className="text-sm text-gray-500">Sample case entries for the hospital workflow. The model covers cholera and acute diarrheal disease only.</p>
+          </div>
           <button onClick={() => setShowReport(true)} className="px-5 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity" style={{ background: "#E53935" }}>+ Report New Case</button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-4 gap-4">
-          {[{ label: "Severe", value: 8, color: "#E53935", bg: "#FFEBEE" }, { label: "Moderate", value: 24, color: "#FB8C00", bg: "#FFF3E0" }, { label: "Mild", value: 19, color: "#F59E0B", bg: "#FFFDE7" }, { label: "Recovered", value: 16, color: "#43A047", bg: "#E8F5E9" }].map(s => (
+        {/* Stats (counted from the sample entries below) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {([
+            { label: "Severe", key: "SEVERE", color: "#E53935", bg: "#FFEBEE" },
+            { label: "Moderate", key: "MODERATE", color: "#FB8C00", bg: "#FFF3E0" },
+            { label: "Mild", key: "MILD", color: "#F59E0B", bg: "#FFFDE7" },
+            { label: "Recovered", key: "RECOVERED", color: "#43A047", bg: "#E8F5E9" },
+          ]).map(s => (
             <div key={s.label} className="rounded-2xl p-5 border" style={{ background: s.bg, borderColor: s.color + "30" }}>
-              <p className="font-display text-3xl font-bold" style={{ color: s.color }}>{s.value}</p>
+              <p className="font-display text-3xl font-bold" style={{ color: s.color }}>{bySeverity[s.key] ?? 0}</p>
               <p className="text-xs font-semibold mt-1" style={{ color: s.color }}>{s.label}</p>
             </div>
           ))}
@@ -270,8 +305,9 @@ export default function HospCases() {
               </button>
             ))}
           </div>
-          <select value={diseaseFilter} onChange={e => setDiseaseFilter(e.target.value)} className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold focus:outline-none">
-            {DISEASES.map(d => <option key={d}>{d}</option>)}
+          <select value={diseaseFilter} onChange={e => setDiseaseFilter(e.target.value as DiseaseFilter)} aria-label="Condition filter"
+            className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold focus:outline-none">
+            {["All", ...CASE_DISEASES].map(d => <option key={d}>{d}</option>)}
           </select>
         </div>
 
@@ -281,7 +317,7 @@ export default function HospCases() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 text-[11px] text-gray-500 uppercase tracking-wider">
-                  {["Case ID", "Patient", "Age/Gender", "Disease", "Symptoms", "Severity", "Status", "Reported", "Actions"].map(h => (
+                  {["Case ID", "Patient", "Age/Gender", "Condition", "Symptoms", "Severity", "Status", "Area", "Reported", "Actions"].map(h => (
                     <th key={h} className="px-4 py-3 text-left font-semibold">{h}</th>
                   ))}
                 </tr>
@@ -305,6 +341,7 @@ export default function HospCases() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-600">{c.status}</td>
+                    <td className="px-4 py-3 text-xs text-gray-600">{unitName(units, c.unitId)}</td>
                     <td className="px-4 py-3 text-xs text-gray-400">{c.reported}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
@@ -317,6 +354,9 @@ export default function HospCases() {
                     </td>
                   </tr>
                 ))}
+                {filtered.length === 0 && (
+                  <tr><td colSpan={10} className="px-4 py-8 text-center text-sm text-gray-500">No entries match these filters.</td></tr>
+                )}
               </tbody>
             </table>
           </div>

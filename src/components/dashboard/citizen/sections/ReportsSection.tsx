@@ -61,7 +61,7 @@ function ReportFormModal({ onClose }: { onClose: () => void }) {
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Location</label>
-              <input type="text" defaultValue="781001 — Guwahati" className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D1F1A]/20" />
+              <input type="text" defaultValue="Chengalpattu Urban (TN_03)" className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D1F1A]/20" />
             </div>
             <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-gray-300 cursor-pointer">
               <Upload className="w-5 h-5 text-gray-400 mx-auto mb-1" />
@@ -137,7 +137,7 @@ export default function ReportsSection() {
                     </div>
                     <p className="text-sm text-[#0D1F1A] font-medium mb-1">"{report.desc}"</p>
                     <div className="flex items-center gap-4 text-xs text-gray-400 flex-wrap">
-                      <span>📍 {report.pincode}</span>
+                      <span>📍 {report.area}</span>
                       <span>📅 {report.date}</span>
                       <span>👩‍⚕️ {report.assignee}</span>
                     </div>

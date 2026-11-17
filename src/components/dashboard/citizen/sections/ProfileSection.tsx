@@ -60,7 +60,7 @@ export default function ProfileSection() {
                 { icon: "📧", label: CITIZEN.email },
                 { icon: "📱", label: CITIZEN.phone },
                 { icon: "📍", label: `${CITIZEN.address}, ${CITIZEN.state}` },
-                { icon: "🏷️", label: `Pincode: ${CITIZEN.pincode}` },
+                { icon: "🏷️", label: `Synthetic unit: ${CITIZEN.unitId}` },
               ].map((row) => (
                 <div key={row.label} className="flex items-center gap-2.5">
                   <span className="text-base">{row.icon}</span>
@@ -154,8 +154,8 @@ export default function ProfileSection() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Pincode</label>
-                  <input defaultValue={CITIZEN.pincode} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D1F1A]/20" />
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Synthetic unit ID</label>
+                  <input defaultValue={CITIZEN.unitId}className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D1F1A]/20" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5">District</label>

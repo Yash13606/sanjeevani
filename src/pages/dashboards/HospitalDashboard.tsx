@@ -5,6 +5,10 @@ import {
   LayoutDashboard, Users, Microscope, BarChart2,
   Bot, User, LogOut, Bell, MessageCircle, X, Send, Stethoscope
 } from "lucide-react";
+import { MlProvider, useMl } from "@/lib/ml/MlContext";
+import { neighborIds, unitTier } from "@/lib/ml/risk";
+import { MlStatusBar } from "@/components/ml/MlStatusBar";
+import { HOSPITAL } from "@/components/dashboard/hospital/hospitalData";
 import HospDashSection from "@/components/dashboard/hospital/sections/HospDashSection";
 import HospPatients from "@/components/dashboard/hospital/sections/HospPatients";
 import HospCases from "@/components/dashboard/hospital/sections/HospCases";
@@ -19,7 +23,7 @@ const NAV_ITEMS: { id: SectionId; label: string; icon: React.ReactNode }[] = [
   { id: "patients", label: "Patients", icon: <Users className="w-4 h-4" /> },
   { id: "cases", label: "Cases", icon: <Microscope className="w-4 h-4" /> },
   { id: "reports", label: "Reports", icon: <BarChart2 className="w-4 h-4" /> },
-  { id: "chatbot", label: "AI Chatbot", icon: <Bot className="w-4 h-4" /> },
+  { id: "chatbot", label: "Assistant", icon: <Bot className="w-4 h-4" /> },
   { id: "profile", label: "Profile", icon: <User className="w-4 h-4" /> },
 ];
 
@@ -47,21 +51,23 @@ function MiniChatFAB({ onOpenFull }: { onOpenFull: () => void }) {
           <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.95 }}
             className="absolute bottom-20 right-0 w-[320px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b" style={{ background: "#0D1F1A" }}>
-              <div className="flex items-center gap-2"><Stethoscope className="w-4 h-4 text-[#2ED8A3]" /><span className="text-white text-sm font-semibold">AI Assistant</span></div>
-              <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
+              <div className="flex items-center gap-2"><Stethoscope className="w-4 h-4 text-[#2ED8A3]" /><span className="text-white text-sm font-semibold">Assistant</span></div>
+              <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-white" aria-label="Close"><X className="w-4 h-4" /></button>
             </div>
             <div className="p-4 min-h-[100px] text-sm text-gray-600">
-              {replied ? "CASE-066 (Sunita Borah, Severe Cholera) is currently hospitalized in Ward 3A. Treatment: IV fluids + Doxycycline. Last update: Mar 8, 14:00." : "Hello! Ask about cases, patients, or risk zones."}
+              {replied
+                ? "Open the full assistant to read this week's saved model results for your catchment and to draft a situation note."
+                : "Hello! Ask about the review list, OPD trends or clinical protocols."}
             </div>
             <div className="p-3 border-t flex gap-2">
               <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Quick question…"
                 className="flex-1 px-3 py-2 rounded-full border border-gray-200 text-xs focus:outline-none" />
-              <button onClick={send} className="w-8 h-8 rounded-full bg-[#1565C0] text-white flex items-center justify-center shrink-0">
+              <button onClick={send} className="w-8 h-8 rounded-full bg-[#1565C0] text-white flex items-center justify-center shrink-0" aria-label="Send">
                 <Send className="w-3.5 h-3.5" />
               </button>
             </div>
             <div className="px-3 pb-3">
-              <button onClick={onOpenFull} className="w-full py-2 rounded-xl text-xs font-semibold text-[#1565C0] border border-[#1565C0]/30 hover:bg-[#EFF6FF] transition-colors">Open Full AI Chatbot →</button>
+              <button onClick={onOpenFull} className="w-full py-2 rounded-xl text-xs font-semibold text-[#1565C0] border border-[#1565C0]/30 hover:bg-[#EFF6FF] transition-colors">Open Full Assistant →</button>
             </div>
           </motion.div>
         )}
@@ -78,6 +84,7 @@ function MiniChatFAB({ onOpenFull }: { onOpenFull: () => void }) {
 
 // ─── Onboarding strip ─────────────────────────────────────────────────────────
 function OnboardingStrip() {
+  const navigate = useNavigate();
   const [dismissed, setDismissed] = useState(() => {
     try { return localStorage.getItem("hosp_onboard_dismissed") === "true"; } catch { return false; }
   });
@@ -95,11 +102,14 @@ function OnboardingStrip() {
       style={{ background: "#EFF6FF", borderBottomColor: "#BFDBFE" }}>
       <span className="text-2xl shrink-0">🏥</span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-[#1565C0]">Your Role: Disease Case Reporting & Patient Monitoring</p>
-        <p className="text-xs text-[#1565C0]/70 mt-0.5">This dashboard uses sample cases. The separate ML Lab displays saved synthetic experiments.</p>
+        <p className="text-sm font-semibold text-[#1565C0]">Your role: case reporting, patient monitoring and area review</p>
+        <p className="text-xs text-[#1565C0]/70 mt-0.5">
+          Area scores come from the saved synthetic model run. Patient and case records on this dashboard are sample content,
+          and the model scores areas, not patients.
+        </p>
       </div>
-      <button className="text-xs font-semibold text-[#1565C0] hover:underline shrink-0">Learn More</button>
-      <button onClick={dismiss} className="p-1 rounded-lg hover:bg-blue-100 text-[#1565C0]/60 hover:text-[#1565C0] transition-colors shrink-0">
+      <button onClick={() => navigate("/ml-lab")} className="text-xs font-semibold text-[#1565C0] hover:underline shrink-0">Open ML Lab</button>
+      <button onClick={dismiss} aria-label="Dismiss" className="p-1 rounded-lg hover:bg-blue-100 text-[#1565C0]/60 hover:text-[#1565C0] transition-colors shrink-0">
         <X className="w-4 h-4" />
       </button>
     </motion.div>
@@ -108,11 +118,25 @@ function OnboardingStrip() {
 
 // ─── Main Shell ───────────────────────────────────────────────────────────────
 export default function HospitalDashboard() {
+  return (
+    <MlProvider role="hospital">
+      <HospitalShell />
+    </MlProvider>
+  );
+}
+
+function HospitalShell() {
   const [activeSection, setActiveSection] = useState<SectionId>("dashboard");
   const navigate = useNavigate();
+  const { board, units, homeUnit } = useMl();
 
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  // Bell badge: catchment units (the hospital's unit and its neighbours) the model currently flags for review
+  const flaggedInCatchment = board
+    ? [homeUnit, ...neighborIds(units, homeUnit)].filter((id) => {
+        const unit = board.units.find((u) => u.unit_id === id);
+        return unitTier(unit, "m1") === "review" || unitTier(unit, "m2") === "review";
+      }).length
+    : 0;
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#F4F6F5]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
@@ -131,16 +155,16 @@ export default function HospitalDashboard() {
         {/* Hospital info */}
         <div className="mx-3 mb-1 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.05)" }}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#1565C0] flex items-center justify-center text-white text-sm font-bold shrink-0">GM</div>
+            <div className="w-10 h-10 rounded-xl bg-[#1565C0] flex items-center justify-center text-white text-sm font-bold shrink-0">{HOSPITAL.initials}</div>
             <div className="min-w-0">
-              <p className="text-white font-semibold text-xs leading-tight">Gauhati Medical College</p>
+              <p className="text-white font-semibold text-xs leading-tight">{HOSPITAL.name}</p>
               <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold mt-1" style={{ background: "#1565C0", color: "#93C5FD" }}>Hospital</span>
             </div>
           </div>
         </div>
         {/* Subtitle */}
         <p className="px-4 pb-3 text-[11px] leading-snug" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'DM Sans',sans-serif" }}>
-          Monitor patients and report disease cases to the network
+          Monitor patients and review the model&apos;s weekly area scores
         </p>
 
         {/* Nav */}
@@ -175,32 +199,32 @@ export default function HospitalDashboard() {
 
       {/* ─── Main Area ────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* Onboarding strip — only on dashboard section */}
+        {/* Onboarding strip: only on dashboard section */}
         <AnimatePresence>{activeSection === "dashboard" && <OnboardingStrip />}</AnimatePresence>
 
         {/* Top bar */}
         <header className="shrink-0 bg-white border-b border-gray-100 px-8 py-3 flex items-center justify-between">
           <div>
-            <h1 className="font-display text-[22px] font-bold text-[#0D1F1A]">Gauhati Medical College</h1>
-            <p className="text-xs text-gray-400 mt-0.5">Dispur, Guwahati · 781005</p>
+            <h1 className="font-display text-[22px] font-bold text-[#0D1F1A]">{HOSPITAL.name}</h1>
+            <p className="text-xs text-gray-400 mt-0.5">{HOSPITAL.address} · {HOSPITAL.district}, {HOSPITAL.state}</p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors">
+            <button onClick={() => setActiveSection("dashboard")} aria-label={`${flaggedInCatchment} catchment unit(s) in review`}
+              className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors">
               <Bell className="w-5 h-5 text-gray-500" />
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#E53935] text-[9px] text-white font-bold flex items-center justify-center">4</span>
+              {flaggedInCatchment > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#E53935] text-[9px] text-white font-bold flex items-center justify-center">{flaggedInCatchment}</span>
+              )}
             </button>
             <button onClick={() => setActiveSection("chatbot")}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
               style={{ background: "linear-gradient(135deg, #0D7A4A 0%, #22C55E 100%)" }}>
-              <Bot className="w-4 h-4" /> AI Assistant
+              <Bot className="w-4 h-4" /> Assistant
             </button>
           </div>
         </header>
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-amber-200 bg-amber-50 px-5 py-2 text-xs text-amber-950">
-          <span><strong>Demo UI:</strong> cases, alerts and reports here are sample content.</span>
-          <button type="button" onClick={() => navigate("/ml-lab")} className="font-semibold underline">Open synthetic ML Lab</button>
-        </div>
+        <MlStatusBar areaLabel="Hospital unit" />
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto p-8">

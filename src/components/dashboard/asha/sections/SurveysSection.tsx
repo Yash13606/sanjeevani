@@ -151,8 +151,8 @@ function PostSurveyModal({ onClose }: { onClose: () => void }) {
                 <input className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D7A4A]/20" placeholder="e.g. April Water Quality Survey" /></div>
               <div><label className="block text-xs font-semibold text-gray-500 mb-1.5">Description</label>
                 <textarea rows={3} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm resize-none focus:outline-none" placeholder="Brief purpose of this survey..." /></div>
-              <div><label className="block text-xs font-semibold text-gray-500 mb-1.5">Target Pincodes</label>
-                <input defaultValue="781001" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none" placeholder="Type pincode and press Enter" /></div>
+              <div><label className="block text-xs font-semibold text-gray-500 mb-1.5">Target Units</label>
+                <input defaultValue="TN_01" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none" placeholder="Type a unit ID (for example TN_01)" /></div>
               <div className="grid grid-cols-2 gap-3">
                 <div><label className="block text-xs font-semibold text-gray-500 mb-1.5">Start Date</label><input type="date" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" /></div>
                 <div><label className="block text-xs font-semibold text-gray-500 mb-1.5">End Date</label><input type="date" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" /></div>
@@ -222,7 +222,7 @@ function PostSurveyModal({ onClose }: { onClose: () => void }) {
             <div className="text-center py-4">
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4"><CheckCircle className="w-9 h-9 text-[#43A047]" /></div>
               <h3 className="font-display text-xl font-bold text-[#0D1F1A] mb-1">Survey Published! 🎉</h3>
-              <p className="text-sm text-gray-500 mb-6">Citizens in 781001 will receive a notification to participate.</p>
+              <p className="text-sm text-gray-500 mb-6">Demo form: nothing is sent. In a real rollout, citizens in the target units would be notified.</p>
               <button onClick={onClose} className="px-8 py-2.5 rounded-xl bg-[#0D7A4A] text-white text-sm font-semibold">Done</button>
             </div>
           )}
@@ -304,7 +304,7 @@ export default function SurveysSection() {
                 </div>
 
                 <div className="flex items-center gap-4 text-xs text-gray-400 mb-3 flex-wrap">
-                  <span>📍 Pincode: {survey.target}</span>
+                  <span>📍 Units: {survey.target}</span>
                   <span>📅 {isActive ? `Closes: ${survey.closeDate}` : `Closed: ${survey.closeDate}`}</span>
                   <span>❓ {survey.questions} questions</span>
                 </div>

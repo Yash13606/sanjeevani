@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { ARTICLES_DATA } from "../ashaData";
 
-const ALL_TAGS = ["All", "Prevention", "Cholera", "Typhoid", "Hygiene", "Water Safety", "Emergency", "Community"];
+const ALL_TAGS = ["All", "Prevention", "Cholera", "Hygiene", "Water Safety", "Emergency", "Community"];
 
 type Article = typeof ARTICLES_DATA[number];
 
@@ -69,7 +69,7 @@ function WriteArticleModal({ onClose }: { onClose: () => void }) {
             <div>
               <label className="block text-xs font-semibold text-gray-500 mb-1.5">Target Audience</label>
               <div className="flex gap-2">
-                {["All Citizens", "Specific Pincode"].map(opt => (
+                {["All Citizens", "Specific Unit"].map(opt => (
                   <label key={opt} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium cursor-pointer hover:border-gray-300">
                     <input type="radio" name="audience" className="w-3.5 h-3.5" defaultChecked={opt === "All Citizens"} /> {opt}
                   </label>

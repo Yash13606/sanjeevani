@@ -1,13 +1,20 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ArrowUpRight, X, Upload, CheckCircle } from "lucide-react";
+import { ARTICLES, SURVEYS } from "../mockData";
+import { ClusterBlock } from "@/components/ml/ClusterPanels";
+import { MlGate } from "@/components/ml/MlGate";
+import { SignalPanel } from "@/components/ml/SignalPanel";
+import { TaskToggle } from "@/components/ml/TaskToggle";
+import { TierBadge } from "@/components/ml/TierBadge";
+import { useMl } from "@/lib/ml/MlContext";
 import {
-  AREA_RISKS, SENSOR_DATA, ARTICLES, SURVEYS,
-  RISK_COLOR, RISK_BG, RISK_TEXT_CLASS
-} from "../mockData";
+  TASK_META, TIER_META, formatScore, formatWeek, neighborIds, observedSignals, unitName, unitScore, unitTier,
+} from "@/lib/ml/risk";
+import type { TaskId, Tier } from "@/lib/ml/types";
 
 // ─── Report Modal ─────────────────────────────────────────────────────────────
-function ReportModal({ onClose }: { onClose: () => void }) {
+function ReportModal({ onClose, areaLabel }: { onClose: () => void; areaLabel: string }) {
   const [reportType, setReportType] = useState<string>("water");
   const [desc, setDesc] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -42,7 +49,8 @@ function ReportModal({ onClose }: { onClose: () => void }) {
             </motion.div>
             <h3 className="font-display text-xl font-bold text-[#0D1F1A] mb-1">Report Submitted ✓</h3>
             <p className="text-sm text-gray-500 mb-3">Reference: <span className="font-mono font-bold text-[#0D1F1A]">RPT-2026-0848</span></p>
-            <p className="text-sm text-gray-500 mb-6">An ASHA worker will review within 24 hours.</p>
+            <p className="text-sm text-gray-500 mb-2">An ASHA worker will review within 24 hours.</p>
+            <p className="text-xs text-gray-400 mb-6">Demo form: nothing is sent anywhere, and reports do not feed the ML model in this experiment.</p>
             <button onClick={onClose} className="px-6 py-2.5 rounded-xl bg-[#0D1F1A] text-white text-sm font-semibold hover:bg-[#1A3D2B] transition-colors">
               Close
             </button>
@@ -89,10 +97,10 @@ function ReportModal({ onClose }: { onClose: () => void }) {
 
             {/* Location */}
             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Location</label>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Area</label>
               <input
                 type="text"
-                defaultValue="781001 — Guwahati"
+                defaultValue={areaLabel}
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-[#0D1F1A] focus:outline-none focus:ring-2 focus:ring-[#0D1F1A]/20"
               />
             </div>
@@ -120,153 +128,178 @@ function ReportModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+// General prevention guidance by tier. It is not medical advice and not produced by the model.
+const ADVICE: Record<Tier, { icon: string; text: string }[]> = {
+  review: [
+    { icon: "⚠️", text: "Boil drinking water for at least 10 minutes" },
+    { icon: "⚠️", text: "Keep ORS at home for diarrhea or vomiting" },
+    { icon: "⚠️", text: "Report symptoms to your ASHA worker early" },
+    { icon: "✅", text: "Wash hands with soap before meals" },
+  ],
+  watch: [
+    { icon: "⚠️", text: "Boil or treat drinking water" },
+    { icon: "⚠️", text: "Wash hands with soap before meals" },
+    { icon: "✅", text: "Know where ORS is available" },
+    { icon: "✅", text: "Report symptoms early" },
+  ],
+  routine: [
+    { icon: "✅", text: "Keep using boiled or treated drinking water" },
+    { icon: "✅", text: "Wash hands regularly" },
+    { icon: "✅", text: "Report any water problem you notice" },
+  ],
+};
+
+// ─── Model-driven section ─────────────────────────────────────────────────────
+function AreaStatus({ onOpenMap }: { onOpenMap?: () => void }) {
+  const { board, units, homeUnit, date, models } = useMl();
+  const [task, setTask] = useState<TaskId>("m1");
+  const home = board?.units.find((u) => u.unit_id === homeUnit);
+
+  // Early warning is only defined for units without an active event; otherwise describe the active event.
+  const headline: TaskId = home?.m1 ? "m1" : "m2";
+  const tier = unitTier(home, headline) ?? "routine";
+  const meta = TIER_META[tier];
+  const signals = home ? observedSignals(home.signals) : [];
+  const neighbours = neighborIds(units, homeUnit);
+
+  return (
+    <>
+      {/* 1 — Personal status card */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-2xl shadow-sm border overflow-hidden"
+        style={{ background: meta.bg, borderColor: `${meta.color}33` }}
+      >
+        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Your Area</p>
+            <h3 className="font-display text-2xl font-bold text-[#0D1F1A] leading-tight">{unitName(units, homeUnit)}</h3>
+            <p className="text-sm text-gray-500 mt-0.5">Synthetic unit {homeUnit} · Tamil Nadu-style simulation</p>
+            <p className="mt-3 text-xs text-gray-500">Model week of <strong>{formatWeek(date)}</strong> (weekly Monday decision, end of day)</p>
+          </div>
+
+          <div className="flex flex-col items-center gap-2">
+            <div className="relative w-28 h-28 flex items-center justify-center">
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" style={{ animation: "spin 8s linear infinite" }}>
+                <circle cx="50" cy="50" r="46" fill="none" stroke={meta.color} strokeWidth="3" strokeDasharray="12 6" opacity="0.6" />
+              </svg>
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="38" fill="white" stroke={meta.color} strokeWidth="4" />
+              </svg>
+              <div className="relative z-10 text-center">
+                <div className="text-xl">{meta.emoji}</div>
+                <div className="text-xs font-bold leading-tight mt-0.5" style={{ color: meta.color }}>
+                  {meta.label.toUpperCase()}
+                </div>
+              </div>
+            </div>
+            <p className="text-center text-[11px] text-gray-600">
+              {TASK_META[headline].name}: score {formatScore(unitScore(home, headline))}
+              {headline === "m2" && <><br />An event is already active here, so early warning is not scored</>}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">General precautions:</p>
+            <ul className="space-y-1.5">
+              {ADVICE[tier].map((item) => (
+                <li key={item.text} className="flex items-start gap-2 text-xs text-gray-700">
+                  <span className="shrink-0">{item.icon}</span>
+                  <span>{item.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="px-6 py-2.5 border-t" style={{ borderColor: `${meta.color}26`, background: "rgba(255,255,255,0.5)" }}>
+          <p className="text-xs text-gray-600">
+            <span className="font-semibold">Signals seen this week:</span>{" "}
+            {signals.length ? signals.slice(0, 3).join(" · ") : "nothing unusual in the observed signals"}
+          </p>
+        </div>
+      </motion.div>
+
+      {/* 2 — Two column: neighbours + signals */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <h3 className="font-display text-lg font-bold text-[#0D1F1A]">Neighbouring Areas</h3>
+            <div className="flex items-center gap-3">
+              <TaskToggle task={task} onChange={setTask} />
+              {onOpenMap && (
+                <button onClick={onOpenMap} className="text-xs text-[#0D7A4A] font-semibold flex items-center gap-1 hover:underline">
+                  View Full Map <ArrowUpRight className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          </div>
+          {neighbours.length === 0 ? (
+            <p className="text-sm text-gray-500">No neighbouring units are listed for this area.</p>
+          ) : (
+            <div className="space-y-2">
+              {neighbours.map((id) => {
+                const unit = board?.units.find((u) => u.unit_id === id);
+                const neighbourTier = unitTier(unit, task);
+                return (
+                  <div key={id} className="flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-[#F8FFFE] transition-colors group">
+                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: neighbourTier ? TIER_META[neighbourTier].color : "#9CA3AF" }} />
+                    <span className="text-sm font-medium text-[#0D1F1A] flex-1">{unitName(units, id)}</span>
+                    <span className="text-xs text-gray-400 font-mono">{id}</span>
+                    <TierBadge tier={neighbourTier} />
+                    <span className="text-xs text-gray-500 font-mono w-14 text-right">{formatScore(unitScore(unit, task))}</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 transition-colors" />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <p className="mt-3 text-[11px] text-gray-400">
+            Review: score ≥ {models?.[task].f1_threshold?.toFixed(3) ?? "—"} · Watch: score ≥ {models?.[task].recall_threshold?.toFixed(3) ?? "—"}.
+            {" "}{TASK_META[task].question}
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-display text-lg font-bold text-[#0D1F1A]">Water &amp; Weather Inputs</h3>
+            <span className="text-[10px] font-semibold text-gray-500 bg-gray-100 rounded-full px-2 py-0.5">Weekly</span>
+          </div>
+          <p className="text-xs text-gray-400 font-mono mb-4">{homeUnit} · week of {formatWeek(date)}</p>
+          {home ? <SignalPanel signals={home.signals} compact /> : <p className="text-sm text-gray-500">No saved signals for this unit.</p>}
+          <div className="mt-4 pt-3 border-t border-gray-100">
+            <p className="text-[10px] text-gray-400">These are the weekly inputs the model received. They are not live readings and there is no pH input.</p>
+          </div>
+        </motion.div>
+      </div>
+    </>
+  );
+}
+
 // ─── Dashboard Overview Section ───────────────────────────────────────────────
-export default function DashOverview() {
+export default function DashOverview({ onOpenMap }: { onOpenMap?: () => void }) {
   const [showReportModal, setShowReportModal] = useState(false);
+  const { units, homeUnit } = useMl();
+  const areaLabel = `${unitName(units, homeUnit)} (${homeUnit})`;
 
   return (
     <>
       <div className="space-y-6">
-        {/* 1 — Personal Alert Status Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-[#FFF7ED] rounded-2xl shadow-sm border border-orange-100 overflow-hidden"
-        >
-          <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            {/* Left: Location */}
-            <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Your Area</p>
-              <h3 className="font-display text-2xl font-bold text-[#0D1F1A] leading-tight">Guwahati, 781001</h3>
-              <p className="text-sm text-gray-500 mt-0.5">Kamrup District, Assam</p>
-              <div className="flex items-center gap-1.5 mt-3">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs text-gray-500">Last updated 6 min ago</span>
-              </div>
-            </div>
-
-            {/* Center: Risk ring */}
-            <div className="flex flex-col items-center gap-2">
-              <div className="relative w-28 h-28 flex items-center justify-center">
-                {/* Outer spinning dashed ring */}
-                <svg className="absolute inset-0 w-full h-full animate-spin-slow" viewBox="0 0 100 100" style={{ animation: "spin 8s linear infinite" }}>
-                  <circle
-                    cx="50" cy="50" r="46"
-                    fill="none"
-                    stroke="#FB8C00"
-                    strokeWidth="3"
-                    strokeDasharray="12 6"
-                    opacity="0.6"
-                  />
-                </svg>
-                {/* Solid inner ring */}
-                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="38" fill="#FFF7ED" stroke="#FB8C00" strokeWidth="4" />
-                </svg>
-                {/* Inner content */}
-                <div className="relative z-10 text-center">
-                  <div className="text-xl">⚠️</div>
-                  <div className="text-xs font-bold text-[#FB8C00] leading-tight mt-0.5">MEDIUM<br/>RISK</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Advice */}
-            <div>
-              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">What you should do:</p>
-              <ul className="space-y-1.5">
-                {[
-                  { icon: "⚠️", text: "Boil water for at least 10 minutes" },
-                  { icon: "⚠️", text: "Avoid raw vegetables and fruits" },
-                  { icon: "⚠️", text: "Report any symptoms to ASHA worker" },
-                  { icon: "✅", text: "Clean water available at PHC Dispur" },
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs text-gray-700">
-                    <span className="shrink-0">{item.icon}</span>
-                    <span>{item.text}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Bottom strip */}
-          <div className="bg-orange-50 px-6 py-2.5 border-t border-orange-100">
-            <p className="text-xs text-gray-600">
-              <span className="font-semibold">Based on:</span> 14 cases reported nearby + High TDS (842 ppm) detected at sensor SNS-781001-A
-            </p>
-          </div>
-        </motion.div>
-
-        {/* 2 — Two column: Area risks + Sensor data */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* District Risk Summary (60%) */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display text-lg font-bold text-[#0D1F1A]">Nearby Area Risks</h3>
-              <button className="text-xs text-[#2ED8A3] font-semibold flex items-center gap-1 hover:text-[#0D7A4A] transition-colors">
-                View Full Map <ArrowUpRight className="w-3 h-3" />
-              </button>
-            </div>
-            <div className="space-y-2">
-              {AREA_RISKS.map((area) => (
-                <div key={area.pincode} className="flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-[#F8FFFE] transition-colors cursor-pointer group">
-                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: RISK_COLOR[area.risk] }} />
-                  <span className="text-sm font-medium text-[#0D1F1A] flex-1">{area.location}</span>
-                  <span className="text-xs text-gray-400 font-mono">{area.pincode}</span>
-                  <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    style={{ color: RISK_COLOR[area.risk], background: RISK_BG[area.risk] }}
-                  >
-                    {area.risk}
-                  </span>
-                  <span className="text-xs text-gray-500">{area.cases} cases</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 transition-colors" />
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Live Sensor Readings (40%) */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display text-lg font-bold text-[#0D1F1A]">Live Sensor Data</h3>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs text-green-600 font-semibold">Live</span>
-              </div>
-            </div>
-            <p className="text-xs text-gray-400 font-mono mb-4">PIN: 781001</p>
-            <div className="space-y-3">
-              {SENSOR_DATA.map((s) => (
-                <div key={s.label} className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500 font-mono w-20">{s.label}</span>
-                  <span className="text-sm font-bold text-[#0D1F1A] font-mono flex-1 text-center">{s.value}</span>
-                  <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    style={{ color: s.color, background: s.color + "20" }}
-                  >
-                    {s.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 pt-3 border-t border-gray-100">
-              <p className="text-[10px] text-gray-400 font-mono">Sensor: SNS-781001-A · Kamrup River Point</p>
-              <p className="text-[10px] text-gray-400 font-mono mt-0.5">Updated: 2 min ago</p>
-            </div>
-          </motion.div>
-        </div>
+        <MlGate>
+          <AreaStatus onOpenMap={onOpenMap} />
+          <ClusterBlock panels={["regime", "archetype", "coverage", "hotspots"]} />
+        </MlGate>
 
         {/* 3 — Health Articles */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -357,7 +390,7 @@ export default function DashOverview() {
             <span className="text-3xl">🚨</span>
             <div>
               <p className="font-display font-bold text-[#0D1F1A] text-base">Notice a water issue or feeling unwell?</p>
-              <p className="text-sm text-gray-600 mt-0.5">Your report helps prevent outbreaks in your area</p>
+              <p className="text-sm text-gray-600 mt-0.5">Tell your ASHA worker early: early care is the best protection</p>
             </div>
           </div>
           <button
@@ -371,7 +404,7 @@ export default function DashOverview() {
 
       {/* Report Modal */}
       <AnimatePresence>
-        {showReportModal && <ReportModal onClose={() => setShowReportModal(false)} />}
+        {showReportModal && <ReportModal areaLabel={areaLabel} onClose={() => setShowReportModal(false)} />}
       </AnimatePresence>
     </>
   );

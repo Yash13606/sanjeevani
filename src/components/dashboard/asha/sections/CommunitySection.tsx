@@ -1,14 +1,19 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X } from "lucide-react";
-import { COMMUNITY_MEMBERS, RISK_COLOR, RISK_BG, type RiskLevel } from "../ashaData";
+import { COMMUNITY_MEMBERS, ASHA_WORKER } from "../ashaData";
+import { useMl } from "@/lib/ml/MlContext";
+import { TierBadge } from "@/components/ml/TierBadge";
+import { unitTier } from "@/lib/ml/risk";
 
 type Member = typeof COMMUNITY_MEMBERS[number];
 
-const RISK_EMOJI: Record<RiskLevel, string> = { HIGH: "🔴", MEDIUM: "🟠", LOW: "🟢" };
+
 
 // ─── Citizen Detail Slide-over ────────────────────────────────────────────────
 function CitizenDetail({ member, onClose }: { member: Member; onClose: () => void }) {
+  const { board } = useMl();
+  const areaUnit = board?.units.find((u) => u.unit_id === ASHA_WORKER.unitId);
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
@@ -38,7 +43,7 @@ function CitizenDetail({ member, onClose }: { member: Member; onClose: () => voi
               { label: "Gender", value: member.gender === "M" ? "Male" : "Female" },
               { label: "Phone", value: member.phone },
               { label: "Address", value: member.address },
-              { label: "Pincode", value: "781001" },
+              { label: "Unit", value: ASHA_WORKER.unitId },
               { label: "Last Active", value: member.lastActive },
             ].map((row) => (
               <div key={row.label} className="bg-gray-50 rounded-xl p-3">
@@ -48,13 +53,11 @@ function CitizenDetail({ member, onClose }: { member: Member; onClose: () => voi
             ))}
           </div>
 
-          {/* Risk zone */}
-          <div className="rounded-xl p-4 flex items-center gap-3" style={{ background: RISK_BG[member.risk] }}>
-            <span className="text-2xl">{RISK_EMOJI[member.risk]}</span>
-            <div>
-              <p className="text-xs text-gray-500">Risk Zone</p>
-              <p className="font-bold text-sm" style={{ color: RISK_COLOR[member.risk] }}>{member.risk} RISK</p>
-            </div>
+          {/* Area model tier (the model scores whole units, never individuals) */}
+          <div className="rounded-xl p-4 bg-gray-50">
+            <p className="text-xs text-gray-500">Area model tier ({ASHA_WORKER.unitId}, early warning)</p>
+            <div className="mt-1 flex items-center gap-2"><TierBadge tier={unitTier(areaUnit, "m1")} /></div>
+            <p className="mt-2 text-[11px] leading-4 text-gray-400">The model ranks whole areas for review. It does not calculate a risk score for any person.</p>
           </div>
 
           {/* Activity */}
@@ -87,12 +90,12 @@ function CitizenDetail({ member, onClose }: { member: Member; onClose: () => voi
 // ─── Community Section ────────────────────────────────────────────────────────
 export default function CommunitySection() {
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"All" | "High Risk Area" | "Recently Added">("All");
+  const [filter, setFilter] = useState<"All" | "Has Reports" | "Recently Active">("All");
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
   const filtered = COMMUNITY_MEMBERS.filter((m) => {
     const matchesSearch = m.name.toLowerCase().includes(search.toLowerCase()) || m.phone.includes(search);
-    const matchesFilter = filter === "All" ? true : filter === "High Risk Area" ? m.risk === "HIGH" : true;
+    const matchesFilter = filter === "All" ? true : filter === "Has Reports" ? m.reports > 0 : m.lastActive.startsWith("Mar 8") || m.lastActive.startsWith("Mar 9");
     return matchesSearch && matchesFilter;
   });
 
@@ -103,7 +106,7 @@ export default function CommunitySection() {
         <div className="flex items-start justify-between flex-wrap gap-3">
           <div>
             <h2 className="font-display text-[28px] font-bold text-[#0D1F1A]">Community Members</h2>
-            <p className="text-sm text-gray-500">Pincode 781001 · <span className="font-mono font-semibold text-[#0D1F1A]">248</span> registered citizens</p>
+            <p className="text-sm text-gray-500">Unit {ASHA_WORKER.unitId} · Chengalpattu Potheri · <span className="font-mono font-semibold text-[#0D1F1A]">248</span> registered citizens (sample list)</p>
           </div>
           <button className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
             Export List ↓
@@ -115,7 +118,7 @@ export default function CommunitySection() {
           {[
             { label: "Total", value: "248", color: "#0D1F1A" },
             { label: "Active", value: "231", color: "#0D7A4A" },
-            { label: "High Risk Area", value: "89", color: "#E53935" },
+            { label: "Reported This Month", value: "31", color: "#E53935" },
             { label: "New This Month", value: "12", color: "#1565C0" },
           ].map((s) => (
             <div key={s.label} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center">
@@ -133,7 +136,7 @@ export default function CommunitySection() {
               className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D1F1A]/20" />
           </div>
           <div className="flex gap-2">
-            {(["All", "High Risk Area", "Recently Added"] as const).map((f) => (
+            {(["All", "Has Reports", "Recently Active"] as const).map((f) => (
               <button key={f} onClick={() => setFilter(f)}
                 className={`px-3.5 py-2 rounded-full text-xs font-semibold border transition-all ${filter === f ? "bg-[#0D1F1A] text-white border-[#0D1F1A]" : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"}`}>
                 {f}
@@ -148,7 +151,7 @@ export default function CommunitySection() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 text-[11px] text-gray-500 uppercase tracking-wider">
-                  {["Member", "Age", "Gender", "Phone", "Address", "Risk Zone", "Actions"].map((h) => (
+                  {["Member", "Age", "Gender", "Phone", "Address", "Reports", "Actions"].map((h) => (
                     <th key={h} className="px-5 py-3 text-left font-semibold">{h}</th>
                   ))}
                 </tr>
@@ -169,9 +172,7 @@ export default function CommunitySection() {
                     <td className="px-5 py-3 font-mono text-xs text-gray-600">{m.phone}</td>
                     <td className="px-5 py-3 text-gray-500 text-xs max-w-[140px] truncate">{m.address}</td>
                     <td className="px-5 py-3">
-                      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ color: RISK_COLOR[m.risk], background: RISK_BG[m.risk] }}>
-                        {RISK_EMOJI[m.risk]} {m.risk}
-                      </span>
+                      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-gray-100 text-gray-700">{m.reports}</span>
                     </td>
                     <td className="px-5 py-3">
                       <div className="flex gap-2">

@@ -1,28 +1,38 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Share2, Copy, MessageSquare } from "lucide-react";
-import { ALERTS, RISK_COLOR, RISK_BG, RISK_TEXT_CLASS, type RiskLevel } from "../mockData";
+import { X } from "lucide-react";
+import { MlGate } from "@/components/ml/MlGate";
+import { SignalPanel } from "@/components/ml/SignalPanel";
+import { TaskToggle } from "@/components/ml/TaskToggle";
+import { TierBadge } from "@/components/ml/TierBadge";
+import { useMl } from "@/lib/ml/MlContext";
+import {
+  DISCLAIMER, TASK_META, TIER_META, formatScore, formatWeek, neighborIds, observedSignals, rankUnits,
+  tierExplanation, unitName, unitScore, unitTier,
+} from "@/lib/ml/risk";
+import type { BoardUnit, TaskId, Tier } from "@/lib/ml/types";
 
-const RISK_EMOJI = { HIGH: "🔴", MEDIUM: "🟠", LOW: "🟢" };
+type Scope = "near" | "all";
+type TierFilter = "flagged" | "review" | "watch";
 
-type FilterTab = "All" | "High" | "Medium" | "Low";
-const FILTERS: FilterTab[] = ["All", "High", "Medium", "Low"];
+const PRECAUTIONS = [
+  "Boil all drinking water for at least 10 minutes, or use a certified purifier",
+  "Avoid raw foods washed with untreated water",
+  "Use ORS if you have diarrhea or vomiting",
+  "Report symptoms to your ASHA worker early",
+  "Seek care at your nearest health facility if symptoms last beyond 24 hours",
+];
 
-type Alert = typeof ALERTS[number];
+// ─── Flag Detail Slide-over ───────────────────────────────────────────────────
+function FlagDetail({ unit, task, onClose }: { unit: BoardUnit; task: TaskId; onClose: () => void }) {
+  const { units, board, models, date } = useMl();
+  const tier = unitTier(unit, task) ?? "routine";
+  const meta = TIER_META[tier];
+  const seen = observedSignals(unit.signals);
 
-// ─── Alert Detail Slide-over ──────────────────────────────────────────────────
-function AlertDetail({ alert, onClose }: { alert: Alert; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      {/* Backdrop */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-      />
-      {/* Panel */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
       <motion.div
         initial={{ x: 480 }}
         animate={{ x: 0 }}
@@ -30,104 +40,70 @@ function AlertDetail({ alert, onClose }: { alert: Alert; onClose: () => void }) 
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className="relative w-full max-w-[480px] bg-white shadow-2xl overflow-y-auto"
       >
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <div>
-            <h2 className="font-display text-xl font-bold text-[#0D1F1A]">{alert.location} Alert</h2>
-            <p className="text-xs text-gray-400 font-mono">{alert.id}</p>
+            <h2 className="font-display text-xl font-bold text-[#0D1F1A]">{unitName(units, unit.unit_id)}</h2>
+            <p className="text-xs text-gray-400 font-mono">{unit.unit_id} · {board?.world_id}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors" aria-label="Close">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Risk banner */}
-        <div
-          className="px-6 py-4"
-          style={{ background: RISK_BG[alert.risk], borderBottom: `3px solid ${RISK_COLOR[alert.risk]}` }}
-        >
-          <p className="text-sm font-bold" style={{ color: RISK_COLOR[alert.risk] }}>
-            {RISK_EMOJI[alert.risk]} {alert.risk} RISK — {alert.pincode}
+        <div className="px-6 py-4" style={{ background: meta.bg, borderBottom: `3px solid ${meta.color}` }}>
+          <p className="text-sm font-bold" style={{ color: meta.color }}>
+            {meta.emoji} {meta.label.toUpperCase()} · {TASK_META[task].name}
           </p>
-          <p className="text-xs text-gray-600 mt-0.5">Alert issued by: Sanjeevani AI System · Mar 9, 2026 06:42</p>
+          <p className="text-xs text-gray-600 mt-0.5">Model score {formatScore(unitScore(unit, task))} · week of {formatWeek(date)}</p>
         </div>
 
         <div className="p-6 space-y-5">
-          {/* Info cards */}
           <div className="grid grid-cols-2 gap-3">
             {[
-              { label: "Risk Level", value: alert.risk, color: RISK_COLOR[alert.risk] },
-              { label: "Affected Area", value: alert.location },
-              { label: "Generated By", value: "Sanjeevani AI" },
-              { label: "Issued At", value: alert.time },
-            ].map((info, i) => (
-              <div key={i} className="bg-gray-50 rounded-xl p-3">
+              { label: "Model question", value: TASK_META[task].question },
+              { label: "Model", value: models?.[task].model_name || "saved model" },
+              { label: "Source", value: "Saved synthetic run" },
+              { label: "Surveillance", value: board?.scenario ?? "—" },
+            ].map((info) => (
+              <div key={info.label} className="bg-gray-50 rounded-xl p-3">
                 <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">{info.label}</p>
-                <p className="text-sm font-semibold text-[#0D1F1A]" style={info.color ? { color: info.color } : {}}>
-                  {info.value}
-                </p>
+                <p className="text-sm font-semibold text-[#0D1F1A]">{info.value}</p>
               </div>
             ))}
           </div>
 
-          {/* Description */}
           <div>
-            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Description</h4>
-            <p className="text-sm text-gray-600 leading-relaxed">{alert.desc}</p>
+            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">What this means</h4>
+            <p className="text-sm text-gray-600 leading-relaxed">{tierExplanation(task, models?.[task])}</p>
+            <p className="mt-2 text-xs text-gray-500">This is a ranking for follow-up. It does not mean anyone in this area is ill.</p>
           </div>
 
-          {/* Sensor readings */}
-          <div className="bg-gray-50 rounded-xl p-4 font-mono text-xs space-y-1.5">
-            <div className="flex justify-between"><span className="text-gray-500">TDS</span><span className="font-bold text-[#0D1F1A]">{alert.tds} ppm</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">pH</span><span className="font-bold text-[#0D1F1A]">{alert.ph}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Turbidity</span><span className="font-bold text-[#0D1F1A]">{alert.turbidity}</span></div>
+          <div>
+            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Signals seen this week</h4>
+            {seen.length === 0 ? (
+              <p className="text-sm text-gray-500">Nothing unusual in the observed signals.</p>
+            ) : (
+              <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">{seen.map((s) => (<li key={s}>{s}</li>))}</ul>
+            )}
           </div>
 
-          {/* Actionable steps */}
+          <div className="bg-gray-50 rounded-xl p-4">
+            <SignalPanel signals={unit.signals} compact />
+          </div>
+
           <div>
-            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Actionable Steps</h4>
+            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">General precautions</h4>
             <ol className="space-y-2">
-              {[
-                "Boil all drinking water for minimum 10 minutes",
-                "Avoid consuming raw foods washed with tap water",
-                "Use ORS if experiencing diarrhea or vomiting",
-                "Report symptoms to nearest ASHA worker",
-                "Visit PHC Dispur if symptoms persist beyond 24 hours",
-              ].map((step, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700">
-                  <span className="w-5 h-5 rounded-full bg-[#0D1F1A] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                    {i + 1}
-                  </span>
+              {PRECAUTIONS.map((step, i) => (
+                <li key={step} className="flex items-start gap-2.5 text-sm text-gray-700">
+                  <span className="w-5 h-5 rounded-full bg-[#0D1F1A] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
                   {step}
                 </li>
               ))}
             </ol>
           </div>
 
-          {/* Share buttons */}
-          <div>
-            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Share this Alert</h4>
-            <div className="flex gap-2">
-              <button className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-green-500 text-white text-xs font-semibold hover:bg-green-600 transition-colors">
-                <Share2 className="w-3.5 h-3.5" /> WhatsApp
-              </button>
-              <button className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-xs font-semibold hover:border-gray-300 transition-colors">
-                <Copy className="w-3.5 h-3.5" /> Copy Link
-              </button>
-              <button className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-xs font-semibold hover:border-gray-300 transition-colors">
-                <MessageSquare className="w-3.5 h-3.5" /> SMS
-              </button>
-            </div>
-          </div>
-
-          {/* Related cases */}
-          <div className="bg-[#FFF7ED] rounded-xl p-4 border border-orange-100">
-            <p className="text-sm font-semibold text-[#0D1F1A]">🦠 {alert.cases} cases linked to this alert</p>
-            <p className="text-xs text-gray-500 mt-0.5">Data from community reports and PHC registrations</p>
-          </div>
+          <p className="text-[11px] leading-4 text-gray-400">{DISCLAIMER}</p>
         </div>
       </motion.div>
     </div>
@@ -135,118 +111,127 @@ function AlertDetail({ alert, onClose }: { alert: Alert; onClose: () => void }) 
 }
 
 // ─── Alerts Section ──────────────────────────────────────────────────────────
-export default function AlertsSection() {
-  const [filter, setFilter] = useState<FilterTab>("All");
-  const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
+function Flags() {
+  const { board, units, homeUnit, date } = useMl();
+  const [task, setTask] = useState<TaskId>("m1");
+  const [scope, setScope] = useState<Scope>("near");
+  const [filter, setFilter] = useState<TierFilter>("flagged");
+  const [selected, setSelected] = useState<string | null>(null);
 
-  const filtered = ALERTS.filter((a) =>
-    filter === "All" ? true : a.risk === filter.toUpperCase()
-  );
+  const nearIds = useMemo(() => new Set([homeUnit, ...neighborIds(units, homeUnit)]), [units, homeUnit]);
+  const home = board?.units.find((u) => u.unit_id === homeUnit);
+  const homeTier = unitTier(home, task);
+
+  const rows = useMemo(() => {
+    const wanted: Tier[] = filter === "flagged" ? ["review", "watch"] : [filter];
+    return rankUnits(board, task).filter((u) => {
+      const tier = unitTier(u, task);
+      return tier !== null && wanted.includes(tier) && (scope === "all" || nearIds.has(u.unit_id));
+    });
+  }, [board, task, scope, filter, nearIds]);
+
+  const selectedUnit = board?.units.find((u) => u.unit_id === selected) ?? null;
 
   return (
     <>
-      <div className="space-y-6">
-        {/* Page header */}
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h2 className="font-display text-[28px] font-bold text-[#0D1F1A]">Active Alerts</h2>
-            <p className="text-sm text-gray-500 mt-0.5">Guwahati District · Updated 6 min ago</p>
-          </div>
-          {/* Filter pills */}
-          <div className="flex gap-2 flex-wrap">
-            {FILTERS.map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                  filter === f
-                    ? "bg-[#0D1F1A] text-white border-[#0D1F1A]"
-                    : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
-                }`}
-              >
-                {f === "High" ? "🔴" : f === "Medium" ? "🟠" : f === "Low" ? "🟢" : ""} {f}
-              </button>
-            ))}
-          </div>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h2 className="font-display text-[28px] font-bold text-[#0D1F1A]">Area Flags</h2>
+          <p className="text-sm text-gray-500 mt-0.5">Model review flags · week of {formatWeek(date)}</p>
         </div>
+        <TaskToggle task={task} onChange={setTask} />
+      </div>
+      <p className="text-xs text-gray-500 -mt-3">{TASK_META[task].question}</p>
 
-        {/* Personal alert banner */}
-        <div className="bg-[#FFF7ED] rounded-2xl border border-orange-100 p-5 flex items-center gap-5">
-          <div className="text-3xl">⚠️</div>
-          <div className="flex-1">
-            <p className="font-semibold text-[#0D1F1A] text-sm">Your Area (781001) — <span className="text-[#FB8C00]">MEDIUM RISK</span></p>
-            <p className="text-xs text-gray-500 mt-0.5">Alert issued by: Sanjeevani AI System · Mar 9, 2026 06:42 · Based on 14 cases + TDS 842 ppm</p>
-          </div>
-          <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-[#FFF3E0] text-[#FB8C00] border border-orange-200">MEDIUM</span>
+      {/* Personal banner */}
+      <div className="rounded-2xl border p-5 flex items-center gap-5" style={{ background: TIER_META[homeTier ?? "routine"].bg, borderColor: `${TIER_META[homeTier ?? "routine"].color}33` }}>
+        <div className="text-3xl">{TIER_META[homeTier ?? "routine"].emoji}</div>
+        <div className="flex-1">
+          <p className="font-semibold text-[#0D1F1A] text-sm">
+            Your area ({unitName(units, homeUnit)}) —{" "}
+            <span style={{ color: TIER_META[homeTier ?? "routine"].color }}>
+              {homeTier ? TIER_META[homeTier].label.toUpperCase() : "NOT SCORED THIS WEEK"}
+            </span>
+          </p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {homeTier ? `Model score ${formatScore(unitScore(home, task))}` : task === "m1" ? "A simulated event is already active here, so early warning does not apply." : "No score saved."}
+            {" · "}Simulated run {board?.run_id}
+          </p>
         </div>
-
-        {/* Alerts grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map((alert) => (
-            <motion.div
-              key={alert.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
-            >
-              {/* Top colored bar */}
-              <div className="h-1" style={{ background: RISK_COLOR[alert.risk] }} />
-
-              <div className="p-5">
-                {/* Header */}
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h3 className="font-display font-bold text-[#0D1F1A] text-base leading-tight">{alert.location}</h3>
-                    <span className="text-xs font-mono text-gray-400">{alert.pincode}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    {alert.risk === "HIGH" && (
-                      <span className="w-2 h-2 rounded-full animate-ping-ring" style={{ background: RISK_COLOR[alert.risk] }} />
-                    )}
-                    <span
-                      className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={{ color: RISK_COLOR[alert.risk], background: RISK_BG[alert.risk] }}
-                    >
-                      {alert.risk}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="h-px bg-gray-100 my-3" />
-
-                {/* Cause */}
-                <p className="text-sm text-gray-700 flex items-center gap-1.5 mb-2">
-                  <span>{alert.causeIcon}</span>
-                  <span className="font-medium">{alert.cause}</span>
-                </p>
-
-                {/* Sensor row */}
-                <p className="text-[11px] font-mono text-gray-400">
-                  TDS: {alert.tds} · pH: {alert.ph} · Turbidity: {alert.turbidity}
-                </p>
-
-                <div className="h-px bg-gray-100 my-3" />
-
-                {/* Footer */}
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-gray-400">🕐 {alert.time}</span>
-                  <button
-                    onClick={() => setSelectedAlert(alert)}
-                    className="text-xs font-semibold text-[#2ED8A3] hover:text-[#0D7A4A] transition-colors"
-                  >
-                    View Details →
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        <TierBadge tier={homeTier} />
       </div>
 
-      {/* Alert Detail Slide-over */}
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-2">
+        {([["near", "My area & neighbours"], ["all", "All units"]] as const).map(([id, label]) => (
+          <button key={id} onClick={() => setScope(id)}
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${scope === id ? "bg-[#0D1F1A] text-white border-[#0D1F1A]" : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"}`}>
+            {label}
+          </button>
+        ))}
+        <span className="mx-1 h-4 w-px bg-gray-200" />
+        {([["flagged", "All flagged"], ["review", "🔴 Review"], ["watch", "🟠 Watch"]] as const).map(([id, label]) => (
+          <button key={id} onClick={() => setFilter(id)}
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${filter === id ? "bg-[#0D1F1A] text-white border-[#0D1F1A]" : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"}`}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {rows.length === 0 ? (
+        <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center text-sm text-gray-500">
+          No units match these filters this week. Try “All units” or another week.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {rows.map((unit) => {
+            const tier = unitTier(unit, task) as Tier;
+            const seen = observedSignals(unit.signals);
+            return (
+              <motion.div key={unit.unit_id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                <div className="h-1" style={{ background: TIER_META[tier].color }} />
+                <div className="p-5">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <h3 className="font-display font-bold text-[#0D1F1A] text-base leading-tight">{unitName(units, unit.unit_id)}</h3>
+                      <span className="text-xs font-mono text-gray-400">{unit.unit_id}{unit.unit_id === homeUnit ? " · your area" : ""}</span>
+                    </div>
+                    <TierBadge tier={tier} />
+                  </div>
+                  <div className="h-px bg-gray-100 my-3" />
+                  <p className="text-sm text-gray-700 mb-2">
+                    <span className="font-display text-2xl font-bold text-[#0D1F1A]">{formatScore(unitScore(unit, task))}</span>
+                    <span className="ml-2 text-xs text-gray-400">model score</span>
+                  </p>
+                  <p className="text-[11px] text-gray-500 line-clamp-2 min-h-[2rem]">{seen.slice(0, 2).join(" · ") || "No unusual signals in the observed inputs"}</p>
+                  <div className="h-px bg-gray-100 my-3" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-gray-400">Week of {formatWeek(date)}</span>
+                    <button onClick={() => setSelected(unit.unit_id)} className="text-xs font-semibold text-[#0D7A4A] hover:underline">
+                      View Details →
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
       <AnimatePresence>
-        {selectedAlert && <AlertDetail alert={selectedAlert} onClose={() => setSelectedAlert(null)} />}
+        {selectedUnit && <FlagDetail unit={selectedUnit} task={task} onClose={() => setSelected(null)} />}
       </AnimatePresence>
     </>
+  );
+}
+
+export default function AlertsSection() {
+  return (
+    <div className="space-y-6">
+      <MlGate>
+        <Flags />
+      </MlGate>
+    </div>
   );
 }

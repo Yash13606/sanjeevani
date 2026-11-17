@@ -44,7 +44,7 @@ export default function AshaProfile() {
               ASHA Worker
             </span>
             <p className="text-xs text-gray-400 mt-2">Serving since {ASHA_WORKER.servingSince}</p>
-            <p className="text-xs text-gray-400 mt-0.5">Coverage: Pincode 781001</p>
+            <p className="text-xs text-gray-400 mt-0.5">Coverage: unit {ASHA_WORKER.unitId} (Chengalpattu Potheri)</p>
 
             <hr className="w-full my-4 border-gray-100" />
 
@@ -53,7 +53,7 @@ export default function AshaProfile() {
                 { icon: "📧", label: ASHA_WORKER.email },
                 { icon: "📱", label: ASHA_WORKER.phone },
                 { icon: "📍", label: ASHA_WORKER.address },
-                { icon: "🏥", label: "PHC Dispur, Guwahati" },
+                { icon: "🏥", label: "PHC Potheri, Chengalpattu" },
               ].map(row => (
                 <div key={row.label} className="flex items-center gap-2.5">
                   <span className="text-base">{row.icon}</span>
@@ -117,8 +117,8 @@ export default function AshaProfile() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Primary Work Pincode</label>
-                  <input defaultValue={ASHA_WORKER.pincode} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none" />
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Primary Work Unit</label>
+                  <input defaultValue={ASHA_WORKER.unitId}className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5">District (auto-filled)</label>

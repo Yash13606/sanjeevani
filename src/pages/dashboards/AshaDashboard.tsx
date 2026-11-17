@@ -5,6 +5,9 @@ import {
   LayoutDashboard, Users, Microscope, ClipboardList,
   Newspaper, Bot, User, LogOut, Bell, MessageCircle, X, Send, Stethoscope
 } from "lucide-react";
+import { MlProvider, useMl } from "@/lib/ml/MlContext";
+import { neighborIds, unitTier } from "@/lib/ml/risk";
+import { MlStatusBar } from "@/components/ml/MlStatusBar";
 import AshaDashSection from "@/components/dashboard/asha/sections/AshaDashSection";
 import CommunitySection from "@/components/dashboard/asha/sections/CommunitySection";
 import CasesSection from "@/components/dashboard/asha/sections/CasesSection";
@@ -21,7 +24,7 @@ const NAV_ITEMS: { id: SectionId; label: string; icon: React.ReactNode }[] = [
   { id: "cases", label: "Cases", icon: <Microscope className="w-4.5 h-4.5" /> },
   { id: "surveys", label: "Surveys", icon: <ClipboardList className="w-4.5 h-4.5" /> },
   { id: "articles", label: "Articles", icon: <Newspaper className="w-4.5 h-4.5" /> },
-  { id: "chatbot", label: "AI Chatbot", icon: <Bot className="w-4.5 h-4.5" /> },
+  { id: "chatbot", label: "Assistant", icon: <Bot className="w-4.5 h-4.5" /> },
   { id: "profile", label: "Profile", icon: <User className="w-4.5 h-4.5" /> },
 ];
 
@@ -54,11 +57,11 @@ function MiniChatFAB({ onOpenFull }: { onOpenFull: () => void }) {
           <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.95 }}
             className="absolute bottom-20 right-0 w-[320px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b" style={{ background: "#0D1F1A" }}>
-              <div className="flex items-center gap-2"><Stethoscope className="w-4 h-4 text-[#2ED8A3]" /><span className="text-white text-sm font-semibold">AI Assistant</span></div>
+              <div className="flex items-center gap-2"><Stethoscope className="w-4 h-4 text-[#2ED8A3]" /><span className="text-white text-sm font-semibold">Field Assistant</span></div>
               <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
             </div>
             <div className="p-4 min-h-[100px] text-sm text-gray-600">
-              {replied ? "Based on your coverage data, I recommend sending a water boiling advisory for 781001. Shall I draft it?" : "Hello Priya! Ask me about cases, surveys, or protocols."}
+              {replied ? "Open the full assistant to read this week's saved model results for your coverage area and draft a prevention advisory." : "Hello Priya! Ask me about cases, the review list, or protocols."}
             </div>
             <div className="p-3 border-t flex gap-2">
               <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Quick question…"
@@ -69,7 +72,7 @@ function MiniChatFAB({ onOpenFull }: { onOpenFull: () => void }) {
             </div>
             <div className="px-3 pb-3">
               <button onClick={onOpenFull} className="w-full py-2 rounded-xl text-xs font-semibold text-[#0D7A4A] border border-[#0D7A4A]/30 hover:bg-[#F0FAF7] transition-colors">
-                Open Full AI Chatbot →
+                Open Full Assistant →
               </button>
             </div>
           </motion.div>
@@ -87,8 +90,25 @@ function MiniChatFAB({ onOpenFull }: { onOpenFull: () => void }) {
 
 // ─── Main Dashboard Shell ─────────────────────────────────────────────────────
 export default function AshaDashboard() {
+  return (
+    <MlProvider role="asha">
+      <AshaShell />
+    </MlProvider>
+  );
+}
+
+function AshaShell() {
   const [activeSection, setActiveSection] = useState<SectionId>("dashboard");
   const navigate = useNavigate();
+  const { board, units, homeUnit } = useMl();
+
+  // Bell badge: units in the coverage area the model currently flags for review
+  const flaggedInCoverage = board
+    ? [homeUnit, ...neighborIds(units, homeUnit)].filter((id) => {
+        const unit = board.units.find((u) => u.unit_id === id);
+        return unitTier(unit, "m1") === "review" || unitTier(unit, "m2") === "review";
+      }).length
+    : 0;
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
@@ -154,22 +174,21 @@ export default function AshaDashboard() {
         <header className="shrink-0 bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between">
           <h1 className="font-display text-2xl font-bold text-[#0D1F1A]">{greeting}, Priya 👋</h1>
           <div className="flex items-center gap-3">
-            <button className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors">
+            <button onClick={() => setActiveSection("dashboard")} aria-label={`${flaggedInCoverage} coverage unit(s) in review`} className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors">
               <Bell className="w-5 h-5 text-gray-500" />
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#E53935] text-[9px] text-white font-bold flex items-center justify-center">7</span>
+              {flaggedInCoverage > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#E53935] text-[9px] text-white font-bold flex items-center justify-center">{flaggedInCoverage}</span>
+              )}
             </button>
             <button onClick={() => setActiveSection("chatbot")}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
               style={{ background: "linear-gradient(135deg, #0D7A4A 0%, #22C55E 100%)" }}>
-              <Bot className="w-4 h-4" /> AI Assistant
+              <Bot className="w-4 h-4" /> Assistant
             </button>
           </div>
         </header>
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-amber-200 bg-amber-50 px-5 py-2 text-xs text-amber-950">
-          <span><strong>Demo UI:</strong> cases, alerts and reports here are sample content.</span>
-          <button type="button" onClick={() => navigate("/ml-lab")} className="font-semibold underline">Open synthetic ML Lab</button>
-        </div>
+        <MlStatusBar areaLabel="Coverage unit" />
 
         {/* Scrollable content */}
         <main className="flex-1 overflow-y-auto p-8">

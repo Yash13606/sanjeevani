@@ -1,23 +1,22 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CheckCircle, UploadCloud, Bot, Send, Loader2, Sparkles } from "lucide-react";
-import { PATIENTS_DATA, RISK_COLOR, RISK_BG, type RiskLevel } from "../hospitalData";
+import { PATIENTS_DATA } from "../hospitalData";
 
 type Patient = typeof PATIENTS_DATA[number];
 type GenderFilter = "All" | "M" | "F" | "Other";
-type RiskFilter = "All" | RiskLevel;
 
 const GEMINI_API_KEY =
   import.meta.env.VITE_GEMINI_API_KEY;
 
-// â”€â”€â”€ Delete confirm modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Delete confirm modal ─────────────────────────────────────────────────────
 function DeleteModal({ patient, onClose, onConfirm }: { patient: Patient; onClose: () => void; onConfirm: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
         className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
         <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-          <span className="text-2xl">ðŸ—‘ï¸</span>
+          <span className="text-2xl">🗑</span>
         </div>
         <h3 className="font-display text-lg font-bold text-[#0D1F1A] mb-2">Remove Patient?</h3>
         <p className="text-sm text-gray-500 mb-6">Are you sure you want to remove <strong>{patient.name}</strong>? This action cannot be undone.</p>
@@ -30,7 +29,7 @@ function DeleteModal({ patient, onClose, onConfirm }: { patient: Patient; onClos
   );
 }
 
-// â”€â”€â”€ Add / Edit Patient Slide-over with CSV + AI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Add / Edit Patient Slide-over with CSV + AI ──────────────────────────────
 function PatientSlideOver({ patient, onClose, onSave }: { patient?: Patient; onClose: () => void; onSave: (p: Partial<Patient>) => void }) {
   const [saved, setSaved] = useState(false);
   
@@ -42,7 +41,7 @@ function PatientSlideOver({ patient, onClose, onSave }: { patient?: Patient; onC
     phone: patient?.phone || "",
     email: patient?.email || "",
     address: patient?.address || "",
-    pincode: patient?.pincode || "",
+    unitId: patient?.unitId || "",
     history: patient?.history || ""
   });
 
@@ -90,7 +89,7 @@ function PatientSlideOver({ patient, onClose, onSave }: { patient?: Patient; onC
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          systemInstruction: { parts: [{ text: "You are a medical data extraction assistant. Extract patient details from the provided CSV data. Return ONLY a valid JSON object with EXACTLY these keys: name (string), age (string), gender (must be exactly 'M' or 'F' or 'Other'), phone (string), email (string), address (string), pincode (string), history (string). Ensure the output is valid JSON without any markdown code blocks or additional text. If a field is missing, return an empty string for it." }] },
+          systemInstruction: { parts: [{ text: "You are a medical data extraction assistant. Extract patient details from the provided CSV data. Return ONLY a valid JSON object with EXACTLY these keys: name (string), age (string), gender (must be exactly 'M' or 'F' or 'Other'), phone (string), email (string), address (string), unitId (string), history (string). Ensure the output is valid JSON without any markdown code blocks or additional text. If a field is missing, return an empty string for it." }] },
           contents: [{ parts: [{ text: `CSV Data:\n${csvContent}` }] }]
         })
       });
@@ -108,13 +107,13 @@ function PatientSlideOver({ patient, onClose, onSave }: { patient?: Patient; onC
         phone: parsed.phone || prev.phone,
         email: parsed.email || prev.email,
         address: parsed.address || prev.address,
-        pincode: parsed.pincode || prev.pincode,
+        unitId: parsed.unitId || prev.unitId,
         history: parsed.history || prev.history,
       }));
-      setAiMessages(p => [...p, { role: "bot", text: "âœ… I've successfully extracted the details and populated the form below! Please review the fields before saving." }]);
+      setAiMessages(p => [...p, { role: "bot", text: "✅ I've successfully extracted the details and populated the form below! Please review the fields before saving." }]);
     } catch (err) {
       console.error(err);
-      setAiMessages(p => [...p, { role: "bot", text: "âŒ Sorry, I encountered an error while trying to extract the data. Please ensure the CSV contains recognizable patient information." }]);
+      setAiMessages(p => [...p, { role: "bot", text: "❌ Sorry, I encountered an error while trying to extract the data. Please ensure the CSV contains recognizable patient information." }]);
     }
     setIsAiLoading(false);
   };
@@ -182,7 +181,8 @@ function PatientSlideOver({ patient, onClose, onSave }: { patient?: Patient; onC
                       <UploadCloud className="w-5 h-5 text-[#1565C0]" />
                     </div>
                     <p className="font-semibold text-[#1565C0] text-sm">Upload Patient CSV</p>
-                    <p className="text-[11px] text-[#1565C0]/70 mt-1">Sanjeevani AI will auto-extract details</p>
+                    <p className="text-[11px] text-[#1565C0]/70 mt-1">Demo helper: an external AI service extracts the details</p>
+                    <p className="text-[10px] text-[#B45309] mt-1 text-center max-w-xs">Use made-up sample data only. This sends the file text from your browser to an external service when a demo key is set, and no real patient records may be used.</p>
                     <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} />
                   </label>
                 ) : (
@@ -260,12 +260,12 @@ function PatientSlideOver({ patient, onClose, onSave }: { patient?: Patient; onC
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Pincode</label>
-                  <input maxLength={6} value={formData.pincode} onChange={e => setFormData({...formData, pincode: e.target.value})} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="e.g. 781001" />
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Synthetic unit ID</label>
+                  <input maxLength={8} value={formData.unitId} onChange={e => setFormData({...formData, unitId: e.target.value})} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="e.g. TN_03" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5">District (auto)</label>
-                  <input disabled value="Kamrup" className="w-full px-3 py-2.5 rounded-xl border border-gray-100 text-sm text-gray-400 bg-gray-50 cursor-not-allowed" />
+                  <input disabled value="Chengalpattu" className="w-full px-3 py-2.5 rounded-xl border border-gray-100 text-sm text-gray-400 bg-gray-50 cursor-not-allowed" />
                 </div>
               </div>
               <div>
@@ -287,7 +287,7 @@ function PatientSlideOver({ patient, onClose, onSave }: { patient?: Patient; onC
   );
 }
 
-// â”€â”€â”€ Patient Detail Slide-over â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Patient Detail Slide-over ────────────────────────────────────────────────
 function PatientDetail({ patient, onClose }: { patient: Patient; onClose: () => void }) {
   const [tab, setTab] = useState<"overview" | "visits" | "cases">("overview");
   const VISITS = [
@@ -304,11 +304,11 @@ function PatientDetail({ patient, onClose }: { patient: Patient; onClose: () => 
         <div className="px-6 py-5 border-b bg-[#EFF6FF] flex items-start justify-between">
           <div>
             <h2 className="font-display text-xl font-bold text-[#0D1F1A]">{patient.name}</h2>
-            <p className="text-sm text-gray-500 mt-0.5">{patient.gender}, {patient.age} Â· {patient.address}</p>
-            <span className="inline-block mt-2 text-[10px] font-bold px-2.5 py-1 rounded-full"
-              style={{ background: RISK_BG[patient.risk], color: RISK_COLOR[patient.risk] }}>
-              {patient.risk} Risk Zone
+            <p className="text-sm text-gray-500 mt-0.5">{patient.gender}, {patient.age} · {patient.address}</p>
+            <span className="inline-block mt-2 text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#EFF6FF] text-[#1565C0] border border-[#BFDBFE]">
+              Unit {patient.unitId}
             </span>
+            <p className="mt-1 text-[10px] text-gray-400">The model scores areas, not people, so there is no personal risk score.</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-blue-100 text-gray-400"><X className="w-5 h-5" /></button>
         </div>
@@ -330,9 +330,9 @@ function PatientDetail({ patient, onClose }: { patient: Patient; onClose: () => 
               {[
                 { l: "Patient ID", v: patient.id },
                 { l: "Phone", v: patient.phone },
-                { l: "Email", v: patient.email || "â€”" },
-                { l: "Address", v: `${patient.address}, Guwahati` },
-                { l: "Pincode", v: patient.pincode },
+                { l: "Email", v: patient.email || "—" },
+                { l: "Address", v: patient.address },
+                { l: "Synthetic unit", v: patient.unitId },
                 { l: "Last Visit", v: patient.lastVisit },
               ].map(r => (
                 <div key={r.l} className="flex items-start gap-3 py-2 border-b border-gray-50">
@@ -355,7 +355,7 @@ function PatientDetail({ patient, onClose }: { patient: Patient; onClose: () => 
                 <div key={i} className="relative">
                   <div className="absolute -left-4 top-1.5 w-3 h-3 rounded-full bg-[#1565C0] border-2 border-white shadow-sm z-10" />
                   <div className="bg-gray-50 rounded-xl p-4 ml-2">
-                    <p className="text-xs text-gray-400 mb-1">{v.date} Â· {v.type}</p>
+                    <p className="text-xs text-gray-400 mb-1">{v.date} · {v.type}</p>
                     <p className="text-xs font-semibold text-[#0D1F1A] mb-2">{v.doctor}</p>
                     <div className="space-y-1 text-xs text-gray-600">
                       <p>Diagnosis: <span className="font-medium">{v.diagnosis}</span></p>
@@ -375,9 +375,9 @@ function PatientDetail({ patient, onClose }: { patient: Patient; onClose: () => 
               <div className="rounded-xl border border-gray-100 p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-mono text-xs font-bold text-[#0D1F1A]">CASE-067</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FFF3E0] text-[#FB8C00]">ðŸŸ  MODERATE</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FFF3E0] text-[#FB8C00]">🟠 MODERATE</span>
                 </div>
-                <p className="text-xs text-gray-500">Suspected Cholera Â· Under Treatment Â· Mar 8</p>
+                <p className="text-xs text-gray-500">Suspected Cholera · Under Treatment · Mar 8</p>
               </div>
               <button className="w-full py-2.5 rounded-xl bg-[#E53935] text-white text-xs font-semibold hover:bg-red-700 transition-colors">Report New Case for Patient</button>
             </div>
@@ -388,11 +388,10 @@ function PatientDetail({ patient, onClose }: { patient: Patient; onClose: () => 
   );
 }
 
-// â”€â”€â”€ Patients Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Patients Section ─────────────────────────────────────────────────────────
 export default function HospPatients() {
   const [gFilter, setGFilter] = useState<GenderFilter>("All");
-  const [rFilter, setRFilter] = useState<RiskFilter>("All");
-  const [search, setSearch] = useState("");
+    const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [editPatient, setEditPatient] = useState<Patient | null>(null);
   const [deletePatient, setDeletePatient] = useState<Patient | null>(null);
@@ -401,10 +400,9 @@ export default function HospPatients() {
 
   const filtered = patients.filter(p => {
     const s = search.toLowerCase();
-    const matchSearch = p.name.toLowerCase().includes(s) || p.phone.includes(s) || p.pincode.includes(s);
+    const matchSearch = p.name.toLowerCase().includes(s) || p.phone.includes(s) || p.unitId.toLowerCase().includes(s);
     const matchGender = gFilter === "All" || p.gender === gFilter;
-    const matchRisk = rFilter === "All" || p.risk === rFilter;
-    return matchSearch && matchGender && matchRisk;
+    return matchSearch && matchGender;
   });
 
   return (
@@ -414,7 +412,7 @@ export default function HospPatients() {
         <div className="flex items-center justify-between">
           <h2 className="font-display text-[28px] font-bold text-[#0D1F1A]">Patient Records</h2>
           <div className="flex items-center gap-3">
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, phone, pincodeâ€¦"
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, phone, unit…"
               className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 min-w-60" />
             <button onClick={() => setShowAdd(true)} className="px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity shrink-0" style={{ background: "#0D7A4A" }}>+ Add Patient</button>
           </div>
@@ -427,16 +425,16 @@ export default function HospPatients() {
               <button key={g} onClick={() => setGFilter(g)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${gFilter === g ? "bg-white text-[#0D1F1A] shadow-sm" : "text-gray-500"}`}>{g === "M" ? "Male" : g === "F" ? "Female" : g}</button>
             ))}
           </div>
-          <div className="flex gap-1 bg-gray-100 p-1 rounded-xl">
-            {(["All", "HIGH", "MEDIUM", "LOW"] as RiskFilter[]).map(r => (
-              <button key={r} onClick={() => setRFilter(r)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${rFilter === r ? "bg-white text-[#0D1F1A] shadow-sm" : "text-gray-500"}`}>{r === "HIGH" ? "ðŸ”´ High" : r === "MEDIUM" ? "ðŸŸ  Med" : r === "LOW" ? "ðŸŸ¢ Low" : "All"}</button>
-            ))}
-          </div>
         </div>
 
         {/* Stats */}
         <div className="flex items-center gap-6 text-xs">
-          {[{ label: "Total", value: "1,284", color: "#0D1F1A" }, { label: "Male", value: "698", color: "#1565C0" }, { label: "Female", value: "572", color: "#C2185B" }, { label: "Other", value: "14", color: "#FB8C00" }].map(s => (
+          {[
+            { label: "Sample records", value: String(patients.length), color: "#0D1F1A" },
+            { label: "Male", value: String(patients.filter(p => p.gender === "M").length), color: "#1565C0" },
+            { label: "Female", value: String(patients.filter(p => p.gender === "F").length), color: "#C2185B" },
+            { label: "Other", value: String(patients.filter(p => p.gender !== "M" && p.gender !== "F").length), color: "#FB8C00" },
+          ].map(s => (
             <div key={s.label} className="flex items-center gap-1.5">
                <span className="font-mono font-bold text-base" style={{ color: s.color }}>{s.value}</span>
               <span className="text-gray-400">{s.label}</span>
@@ -450,7 +448,7 @@ export default function HospPatients() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 text-[11px] text-gray-500 uppercase tracking-wider">
-                  {["Patient", "Age/Gender", "Contact", "Address", "Last Visit", "Risk Zone", "Actions"].map(h => (
+                  {["Patient", "Age/Gender", "Contact", "Address", "Unit", "Last Visit", "Actions"].map(h => (
                     <th key={h} className="px-4 py-3 text-left font-semibold">{h}</th>
                   ))}
                 </tr>
@@ -469,15 +467,11 @@ export default function HospPatients() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-600">{p.age} Â· {p.gender === "M" ? "Male" : p.gender === "F" ? "Female" : "Other"}</td>
+                    <td className="px-4 py-3 text-xs text-gray-600">{p.age} · {p.gender === "M" ? "Male" : p.gender === "F" ? "Female" : "Other"}</td>
                     <td className="px-4 py-3 text-xs text-gray-600 font-mono">{p.phone}</td>
-                    <td className="px-4 py-3 text-xs text-gray-600">{p.address}, {p.pincode}</td>
+                    <td className="px-4 py-3 text-xs text-gray-600">{p.address}</td>
+                    <td className="px-4 py-3 text-xs font-mono text-gray-600">{p.unitId}</td>
                     <td className="px-4 py-3 text-xs text-gray-500">{p.lastVisit}</td>
-                    <td className="px-4 py-3">
-                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ color: RISK_COLOR[p.risk], background: RISK_BG[p.risk] }}>
-                        {p.risk === "HIGH" ? "ðŸ”´" : p.risk === "MEDIUM" ? "ðŸŸ " : "ðŸŸ¢"} {p.risk}
-                      </span>
-                    </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
                         <button onClick={() => setViewPatient(p)} className="text-xs font-semibold text-[#1565C0] hover:text-blue-900 transition-colors">View</button>
@@ -492,16 +486,8 @@ export default function HospPatients() {
               </tbody>
             </table>
           </div>
-          {/* Pagination */}
-          <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
-            <span>Showing 1â€“{Math.min(filtered.length, 12)} of 1,284 patients</span>
-            <div className="flex items-center gap-1">
-              <button className="px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-50">â† Prev</button>
-              {[1, 2, 3].map(n => <button key={n} className={`w-7 h-7 rounded-lg text-xs font-semibold ${n === 1 ? "bg-[#0D1F1A] text-white" : "hover:bg-gray-50 border border-gray-200"}`}>{n}</button>)}
-              <span>...</span>
-              <button className="px-2.5 py-1 rounded-lg border border-gray-200 font-mono">107</button>
-              <button className="px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-50">Next â†’</button>
-            </div>
+          <div className="px-5 py-3 border-t border-gray-100 text-xs text-gray-400">
+            Showing {filtered.length} of {patients.length} sample patient records. These are demo entries: the model scores areas, not patients, and does not read them.
           </div>
         </motion.div>
       </div>

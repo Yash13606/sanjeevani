@@ -6,6 +6,9 @@ import {
   Droplets, LogOut, MessageCircle, X, Send,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { MlProvider, useMl } from "@/lib/ml/MlContext";
+import { neighborIds, unitTier } from "@/lib/ml/risk";
+import { MlStatusBar } from "@/components/ml/MlStatusBar";
 import DashOverview from "@/components/dashboard/citizen/sections/DashOverview";
 import AlertsSection from "@/components/dashboard/citizen/sections/AlertsSection";
 import HealthMapSection from "@/components/dashboard/citizen/sections/HealthMapSection";
@@ -17,10 +20,10 @@ type Section = "dashboard" | "alerts" | "map" | "reports" | "chatbot" | "profile
 
 const NAV_ITEMS: { id: Section; icon: typeof LayoutDashboard; label: string }[] = [
   { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { id: "alerts", icon: Bell, label: "Alerts" },
+  { id: "alerts", icon: Bell, label: "Area Flags" },
   { id: "map", icon: Map, label: "Health Map" },
   { id: "reports", icon: FileText, label: "Reports" },
-  { id: "chatbot", icon: Bot, label: "AI Chatbot" },
+  { id: "chatbot", icon: Bot, label: "Assistant" },
   { id: "profile", icon: User, label: "Profile" },
 ];
 
@@ -48,7 +51,7 @@ function ChatFAB({ onNavigate }: { onNavigate: () => void }) {
     setTimeout(() => {
       setMessages((m) => [
         ...m,
-        { side: "bot", text: `I'll help with that. For full AI capabilities, use the AI Chatbot section. You asked: "${q}"` },
+        { side: "bot", text: `Thanks for asking about "${q}". Open the full Assistant for answers based on this week's saved model results.` },
       ]);
     }, 800);
   };
@@ -67,7 +70,7 @@ function ChatFAB({ onNavigate }: { onNavigate: () => void }) {
             <div className="bg-[#0D1F1A] p-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Droplets className="w-4 h-4 text-[#4ADE80]" />
-                <span className="text-white text-sm font-semibold">Sanjeevani AI</span>
+                <span className="text-white text-sm font-semibold">Sanjeevani Assistant</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
               </div>
               <div className="flex gap-2">
@@ -125,9 +128,26 @@ function ChatFAB({ onNavigate }: { onNavigate: () => void }) {
 
 // ─── Main Dashboard Shell ────────────────────────────────────────────────────
 export default function CitizenDashboard() {
+  return (
+    <MlProvider role="citizen">
+      <CitizenShell />
+    </MlProvider>
+  );
+}
+
+function CitizenShell() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<Section>("dashboard");
+  const { board, units, homeUnit } = useMl();
+
+  // Bell badge: units in the home area (and its neighbours) the model currently flags for review
+  const nearbyFlags = board
+    ? [homeUnit, ...neighborIds(units, homeUnit)].filter((id) => {
+        const unit = board.units.find((u) => u.unit_id === id);
+        return unitTier(unit, "m1") === "review" || unitTier(unit, "m2") === "review";
+      }).length
+    : 0;
 
   const handleLogout = () => {
     logout();
@@ -136,7 +156,7 @@ export default function CitizenDashboard() {
 
   const renderSection = () => {
     switch (activeSection) {
-      case "dashboard": return <DashOverview />;
+      case "dashboard": return <DashOverview onOpenMap={() => setActiveSection("map")} />;
       case "alerts":    return <AlertsSection />;
       case "map":       return <HealthMapSection />;
       case "reports":   return <ReportsSection />;
@@ -216,10 +236,16 @@ export default function CitizenDashboard() {
           <div className="flex items-center gap-3">
             {/* Notification bell */}
             <div className="relative">
-              <button className="w-9 h-9 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">
+              <button
+                onClick={() => setActiveSection("alerts")}
+                aria-label={`Area flags: ${nearbyFlags} nearby unit(s) in review`}
+                className="w-9 h-9 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
+              >
                 <Bell className="w-4.5 h-4.5" />
               </button>
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow-sm">3</span>
+              {nearbyFlags > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow-sm">{nearbyFlags}</span>
+              )}
             </div>
             {/* AI Assistant button */}
             <button
@@ -228,15 +254,12 @@ export default function CitizenDashboard() {
               style={{ background: "linear-gradient(135deg, #0D7A4A, #2ED8A3)" }}
             >
               <Bot className="w-4 h-4" />
-              AI Assistant
+              Assistant
             </button>
           </div>
         </header>
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-amber-200 bg-amber-50 px-5 py-2 text-xs text-amber-950">
-          <span><strong>Demo UI:</strong> cases, alerts and maps here are sample content.</span>
-          <button type="button" onClick={() => navigate("/ml-lab")} className="font-semibold underline">Open synthetic ML Lab</button>
-        </div>
+        <MlStatusBar areaLabel="Your area" />
 
         {/* Scrollable section content */}
         <main className="flex-1 overflow-y-auto">

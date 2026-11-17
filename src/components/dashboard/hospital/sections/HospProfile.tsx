@@ -1,9 +1,22 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { HOSPITAL } from "../hospitalData";
+import { ALL_CASES, HOSPITAL, PATIENTS_DATA, countBy } from "../hospitalData";
+import { useMl } from "@/lib/ml/MlContext";
+import { formatInt, neighborIds, unitName, unitTier } from "@/lib/ml/risk";
 
 export default function HospProfile() {
+  const { board, units, homeUnit } = useMl();
+  const catchment = [homeUnit, ...neighborIds(units, homeUnit)];
+  const inReview = board
+    ? catchment.filter((id) => {
+        const unit = board.units.find((u) => u.unit_id === id);
+        return unitTier(unit, "m1") === "review" || unitTier(unit, "m2") === "review";
+      }).length
+    : null;
+  const homeSignals = board?.units.find((u) => u.unit_id === homeUnit)?.signals;
+  const conditionCounts = Object.entries(countBy(ALL_CASES, (c) => c.disease)).sort((a, b) => b[1] - a[1]);
+  const topCondition = conditionCounts[0]?.[0] ?? "n/a";
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const [passStrength, setPassStrength] = useState(0);
@@ -40,7 +53,7 @@ export default function HospProfile() {
 
             <hr className="w-full my-4 border-gray-100" />
             <div className="w-full space-y-2.5 text-left">
-              {[{ icon: "📧", label: HOSPITAL.email }, { icon: "📱", label: HOSPITAL.phone }, { icon: "📍", label: `${HOSPITAL.address}, ${HOSPITAL.pincode}` }, { icon: "👨‍⚕️", label: `Head: ${HOSPITAL.headDoctor}` }].map(r => (
+              {[{ icon: "📧", label: HOSPITAL.email }, { icon: "📱", label: HOSPITAL.phone }, { icon: "📍", label: `${HOSPITAL.address} (${HOSPITAL.unitId})` }, { icon: "👨‍⚕️", label: `Head: ${HOSPITAL.headDoctor}` }].map(r => (
                 <div key={r.label} className="flex items-center gap-2.5">
                   <span className="text-base">{r.icon}</span>
                   <span className="text-xs text-gray-600">{r.label}</span>
@@ -54,10 +67,10 @@ export default function HospProfile() {
             <h4 className="font-display font-bold text-[#0D1F1A] mb-4 text-sm">Hospital Statistics</h4>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: "Cases Reported", value: "67" },
-                { label: "Patients Registered", value: "1,284" },
-                { label: "Alerts Received", value: "23" },
-                { label: "Avg Response Time", value: "4.2h" },
+                { label: "Sample case entries", value: String(ALL_CASES.length) },
+                { label: "Sample patient records", value: String(PATIENTS_DATA.length) },
+                { label: "Catchment units in review", value: inReview == null ? "—" : String(inReview) },
+                { label: "OPD cases this week", value: formatInt(homeSignals?.opd_cases_7d) },
               ].map(s => (
                 <div key={s.label} className="bg-[#EFF6FF] rounded-xl p-3 text-center">
                   <p className="font-display text-xl font-bold text-[#1565C0]">{s.value}</p>
@@ -66,8 +79,11 @@ export default function HospProfile() {
               ))}
             </div>
             <div className="mt-3 bg-[#EFF6FF] rounded-xl p-3 text-center">
-              <p className="text-xs font-semibold text-[#1565C0]">🏆 Top Reported Disease: Cholera</p>
+              <p className="text-xs font-semibold text-[#1565C0]">Most common condition in sample records: {topCondition}</p>
             </div>
+            <p className="mt-3 text-[10px] leading-4 text-gray-400">
+              Catchment = {unitName(units, homeUnit)} and its neighbouring units in the saved synthetic run. Case and patient figures are demo content.
+            </p>
           </div>
         </div>
 
@@ -101,8 +117,8 @@ export default function HospProfile() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Pincode</label>
-                  <input defaultValue={HOSPITAL.pincode} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none" />
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Synthetic unit ID</label>
+                  <input disabled defaultValue={HOSPITAL.unitId} className="w-full px-3 py-2.5 rounded-xl border border-gray-100 text-sm text-gray-400 bg-gray-50 cursor-not-allowed" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5">District (auto-filled)</label>
@@ -155,7 +171,8 @@ export default function HospProfile() {
 
           {/* Notification settings */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h3 className="font-display font-bold text-[#0D1F1A] mb-4 text-sm">Notification Settings</h3>
+            <h3 className="font-display font-bold text-[#0D1F1A] mb-1 text-sm">Notification Settings</h3>
+            <p className="mb-4 text-[11px] text-gray-400">Demo preferences only: this experiment does not send SMS, email or WhatsApp alerts.</p>
             <div className="space-y-3">
               {[{ key: "sms" as const, icon: "🔔", label: "SMS Critical Alerts" }, { key: "email" as const, icon: "📧", label: "Email Weekly Summary" }, { key: "whatsapp" as const, icon: "💬", label: "WhatsApp Outbreak Alerts" }, { key: "inapp" as const, icon: "📱", label: "In-App Notifications" }].map(pref => (
                 <div key={pref.key} className="flex items-center justify-between py-2">

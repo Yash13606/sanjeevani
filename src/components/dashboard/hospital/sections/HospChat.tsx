@@ -1,64 +1,107 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Send, Stethoscope } from "lucide-react";
+import { ALL_CASES, MODELED_DISEASES, countBy } from "../hospitalData";
+import { useMl, useUnitHistory } from "@/lib/ml/MlContext";
+import { areaReply, buildChatContext, contextAsPrompt, hotspotReply, waterReply, SYNTHETIC_NOTE, type ChatContext } from "@/lib/ml/chatContext";
+import { TASK_META, TIER_META, formatInt, formatScore, formatWeek, tierCounts, unitName, unitScore, unitTier } from "@/lib/ml/risk";
+import type { History } from "@/lib/ml/types";
 
 type Side = "bot" | "user";
 interface Message { id: number; side: Side; text: string }
 
-const QUICK_REPLIES = ["ðŸ“Š Case summary?", "ðŸ—ºï¸ Risk zones?", "ðŸ¦  Cholera protocol?", "ðŸ§‘â€âš•ï¸ Patient lookup?", "ðŸ“‹ Generate report?"];
+const QUICK_REPLIES = ["📊 OPD trends?", "🗺️ Review list?", "🦠 Cholera protocol?", "💧 Water inputs?", "🧑‍⚕️ Sample cases?", "📋 Situation note?"];
 
-const BOT_RESPONSES: Record<string, string> = {
-  "ðŸ“Š Case summary?": `ðŸ“Š Hospital Summary â€” Mar 2026:\n\nðŸ”´ Severe: 8 cases (5 currently hospitalized)\nðŸŸ  Moderate: 24 cases\nðŸŸ¡ Mild: 19 cases\nâœ… Recovered: 16 cases\n\nðŸ“ˆ Total active: 51\nMost common: Cholera (34%) Â· Typhoid (28%)\n\nâš ï¸ Peak day: Mar 7 â€” 18 admissions\n\nOccupancy alert: ICU at 78% capacity.`,
-  "ðŸ—ºï¸ Risk zones?": `ðŸ—ºï¸ Outbreak Hotspots Near Gauhati Medical College:\n\n1. ðŸ”´ Kamrup East (781001) â€” HIGHEST\n   TDS: 842 ppm | pH: 5.2 | Cases: 18 total\n\n2. ðŸ”´ Azara (781017)\n   TDS: 710 ppm | Cases: 14 total\n\n3. ðŸŸ  Jalukbari (781013)\n   TDS: 520 ppm | Cases: 11 total\n\n4. ðŸŸ  Beltola (781028)\n   TDS: 620 ppm | Cases: 9 total\n\n5. ðŸŸ¢ Your Area: Dispur (781005)\n   TDS: 310 ppm | Cases: 4 (low risk)\n\nðŸ“¢ District RRT has been notified for 781001.`,
-  "ðŸ¦  Cholera protocol?": `ðŸ’Š Cholera Clinical Protocol (WHO/ICMR):\n\n1. CONFIRM: Rice-water stools + rapid dehydration\n2. REHYDRATE: IV Ringer's Lactate â€” 100mL/kg in 3 hrs (severe)\n3. ORS: Continue oral â€” 200mL per stool\n4. ANTIBIOTIC: Doxycycline 300mg single dose (adults)\n   Azithromycin 1g for pregnant/children\n5. MONITOR: Vitals q1h for severe cases\n6. ISOLATE: Contact precautions, gloves\n7. REPORT: Submit via Sanjeevani within 24h\n8. TRACE: Identify water source\n\nðŸ“ž District Health Officer: 0361-2XX-XXXX`,
-  "ðŸ§‘â€âš•ï¸ Patient lookup?": `ðŸ§‘â€âš•ï¸ Recent Patients â€” Last 7 Days:\n\nP-001 â€” Arun Kalita, 45M Â· Mar 8\n   Suspected Cholera Â· Under Treatment\n\nP-002 â€” Sunita Borah, 32F Â· Mar 7\n   Cholera (confirmed) Â· Hospitalized\n\nP-003 â€” Manish Gogoi, 67M Â· Mar 7\n   Typhoid Â· Hospitalized â€” watch BP\n\nP-008 â€” Rekha Baruah, 55F Â· Mar 3\n   Cholera Â· ICU â€” critical\n\nTo view full records, navigate to Patients section.`,
-  "ðŸ“‹ Generate report?": `ðŸ“‹ Monthly Report â€” March 2026:\n\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\nGAUHATI MEDICAL COLLEGE\nDisease Surveillance Report Â· Q1 2026\n\nðŸ“Š SUMMARY\nâ€¢ Total Cases: 67\nâ€¢ Severe: 8 | Moderate: 24 | Mild: 19 | Recovered: 16\nâ€¢ Recovery Rate: 76%\nâ€¢ Avg Hospitalization Duration: 4.2 days\n\nðŸ¦  TOP DISEASES\n1. Cholera â€” 34%\n2. Typhoid â€” 28%\n3. Diarrhea â€” 24%\n\nðŸ“ HIGH RISK PINCODES\n781001 Â· 781017 Â· 781013\n\nReport submitted to District Health Officer âœ“\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\nDownload full PDF from Reports section.`,
-  default: `I can assist with hospital-specific queries:\nâ€¢ Daily case summaries\nâ€¢ Outbreak risk zone updates\nâ€¢ Clinical protocols\nâ€¢ Patient information lookup\nâ€¢ Report generation\n\nWhat would you like to know?`,
-};
+const CHOLERA_PROTOCOL = `🦠 General cholera / acute watery diarrhea response (not model output):\n\n1. Assess hydration status and start rehydration straight away (ORS, IV fluids for severe dehydration)\n2. Send a stool sample for confirmation where available\n3. Isolate suspected cases and use contact precautions\n4. Record the case and notify the district surveillance officer within 24 hours\n5. Trace the household water source and contacts\n6. Advise boiled or chlorinated water and hand washing\n\nFollow your state and national treatment guidelines for drug choices and doses.`;
 
-const INITIAL_MESSAGES: Message[] = [
-  { id: 1, side: "bot", text: "Hello! ðŸ‘‹ Here's your hospital summary:\n\nðŸ¥ Gauhati Medical College Â· 781005\nðŸ¦  Active Cases: 67\nðŸ”´ Severe: 8 Â· Hospitalized: 5\nðŸ“ Nearest High Risk Zone: 781001\n\nHow can I assist you today?" },
-];
+function trendReply(history: History | undefined, label: string): string {
+  const points = history?.points.slice(-5) ?? [];
+  if (points.length === 0) return "I can't see any weekly history right now. Please start the local ML service or load the saved run.";
+  const lines = points.map((p) => `• ${formatWeek(p.date)}: ${formatInt(p.signals.opd_cases_7d)} OPD, ${formatInt(p.signals.asha_cases_7d)} ASHA-reported`);
+  const last = points[points.length - 1].signals.opd_cases_7d;
+  const before = points.length > 1 ? points[points.length - 2].signals.opd_cases_7d : null;
+  const change = last != null && before != null ? `\nOPD change vs previous week: ${last - before >= 0 ? "+" : ""}${formatInt(last - before)}.` : "";
+  return `📊 Weekly counts for ${label} (last ${points.length} weeks):\n\n${lines.join("\n")}${change}\n\nThese are the counts the model reads as input.\n\n${SYNTHETIC_NOTE}`;
+}
+
+function sampleCasesReply(): string {
+  const sev = countBy(ALL_CASES, (c) => c.severity);
+  const modeled = ALL_CASES.filter((c) => MODELED_DISEASES.includes(c.disease)).length;
+  return [
+    `🧑‍⚕️ Sample case entries (${ALL_CASES.length} demo records, not model data):`,
+    `• Severe: ${sev.SEVERE ?? 0} · Moderate: ${sev.MODERATE ?? 0} · Mild: ${sev.MILD ?? 0} · Recovered: ${sev.RECOVERED ?? 0}`,
+    `• In the model's scope (cholera or acute diarrheal disease): ${modeled}`,
+    `• Outside the model's scope: ${ALL_CASES.length - modeled}`,
+    "",
+    "Open the Cases section to view or update an entry. These records are demo content and do not feed the model.",
+  ].join("\n");
+}
 
 export default function HospChat() {
-  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
+  const { board, units, homeUnit } = useMl();
+  const { history } = useUnitHistory(homeUnit, 6);
+  const ctx = useMemo(() => buildChatContext(board, units, homeUnit), [board, units, homeUnit]);
+  const home = board?.units.find((u) => u.unit_id === homeUnit);
+  const counts = tierCounts(board, "m1");
+
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: 1, side: "bot",
+      text: "Hello! 👋 I can read the saved synthetic model results for your hospital's area and share general clinical and reporting protocols.\n\nTry a quick question below.\n\nℹ️ Every risk number here comes from a simulated experiment.",
+    },
+  ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, isTyping]);
 
-  const GEMINI_API_KEY =
-    import.meta.env.VITE_GEMINI_API_KEY;
+  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
+  const quickReply = (text: string, c: ChatContext | null): string => {
+    switch (text) {
+      case "📊 OPD trends?": return trendReply(history, unitName(units, homeUnit));
+      case "🗺️ Review list?": return hotspotReply(c, "m1");
+      case "🦠 Cholera protocol?": return CHOLERA_PROTOCOL;
+      case "💧 Water inputs?": return waterReply(c);
+      case "🧑‍⚕️ Sample cases?": return sampleCasesReply();
+      case "📋 Situation note?": {
+        const tier = unitTier(home, home?.m1 ? "m1" : "m2") ?? "routine";
+        return `📋 Draft situation note (not sent):\n\n${unitName(units, homeUnit)}, week of ${formatWeek(board?.date)}: ${TIER_META[tier].label} tier in the saved synthetic run.\n\n${areaReply(c).split("\n").slice(1, 5).join("\n")}\n\nThis is a draft for your own use. The experiment does not send alerts or reports to anyone.`;
+      }
+      default: return `I can answer about OPD trends, the review list, water inputs, the cholera protocol, sample cases and drafting a situation note.\n\n${SYNTHETIC_NOTE}`;
+    }
+  };
 
   const send = async (text: string) => {
     if (!text.trim()) return;
     setMessages(m => [...m, { id: Date.now(), side: "user", text }]);
     setInput("");
-    setIsTyping(true);
 
-    if (!GEMINI_API_KEY) {
-      setMessages(m => [...m, { id: Date.now() + 1, side: "bot", text: "Demo chat is not configured on this device." }]);
-      setIsTyping(false);
+    const isQuick = QUICK_REPLIES.includes(text);
+    if (isQuick || !GEMINI_API_KEY) {
+      const reply = isQuick ? quickReply(text, ctx) : `The optional demo chat is not configured on this device, so I can only answer the quick questions.\n\n${SYNTHETIC_NOTE}`;
+      setMessages(m => [...m, { id: Date.now() + 1, side: "bot", text: reply }]);
       return;
     }
 
+    setIsTyping(true);
     try {
-      const systemInstruction = "You are the Sanjeevani AI Assistant optimized for Hospital staff (Gauhati Medical College Â· 781005). Provide clinical protocols, disease summaries, hospital resource management advice, and outbreak tracking insights. Keep answers highly professional, medical-focused, and concise. Format with emojis where appropriate.";
-      
+      const systemInstruction = contextAsPrompt("hospital clinician or administrator", ctx) + "\nKeep answers professional and concise, and do not give drug doses.";
+
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           system_instruction: { parts: [{ text: systemInstruction }] },
-          contents: [{ parts: [{ text: text }] }]
+          contents: [{ parts: [{ text }] }]
         })
       });
-      
+
       if (!res.ok) throw new Error("API Error");
       const data = await res.json();
       const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't process that.";
-      
+
       setMessages(m => [...m, { id: Date.now() + 1, side: "bot", text: responseText }]);
     } catch (e) {
       console.error(e);
@@ -71,10 +114,12 @@ export default function HospChat() {
   return (
     <div className="space-y-0">
       <div className="mb-5">
-        <h2 className="font-display text-[24px] font-bold text-[#0D1F1A]">Sanjeevani AI Assistant</h2>
+        <h2 className="font-display text-[24px] font-bold text-[#0D1F1A]">Sanjeevani Assistant</h2>
         <div className="flex items-center gap-2 mt-1">
           <span className="w-2 h-2 rounded-full bg-amber-500" />
-          <span className="text-sm text-gray-600 font-medium">{GEMINI_API_KEY ? "Demo key configured" : "Demo chat unavailable"}</span>
+          <span className="text-sm text-gray-600 font-medium">
+            {GEMINI_API_KEY ? "Demo key configured (open questions go to an external AI service)" : "Quick questions only (no demo key configured)"}
+          </span>
         </div>
       </div>
 
@@ -117,9 +162,9 @@ export default function HospChat() {
           {/* Input */}
           <div className="p-4 border-t border-gray-100 flex gap-3">
             <input type="text" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send(input)}
-              placeholder="Ask about cases, protocols, patients, or reportsâ€¦"
+              placeholder="Ask about the review list, OPD trends or protocols…"
               className="flex-1 px-4 py-2.5 rounded-full border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1565C0]/20" />
-            <button onClick={() => send(input)} className="w-10 h-10 rounded-full bg-[#1565C0] text-white flex items-center justify-center hover:bg-blue-900 transition-colors shrink-0">
+            <button onClick={() => send(input)} className="w-10 h-10 rounded-full bg-[#1565C0] text-white flex items-center justify-center hover:bg-blue-900 transition-colors shrink-0" aria-label="Send">
               <Send className="w-4 h-4" />
             </button>
           </div>
@@ -128,22 +173,28 @@ export default function HospChat() {
         {/* Sidebar */}
         <div className="space-y-4">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <h4 className="font-display font-bold text-[#0D1F1A] mb-3 text-sm">Hospital Summary</h4>
+            <h4 className="font-display font-bold text-[#0D1F1A] mb-3 text-sm">Catchment Summary</h4>
             <div className="space-y-2.5">
-              {[{ label: "Active Cases", value: "67", color: "#E53935" }, { label: "Severe Cases", value: "8", color: "#E53935" }, { label: "Total Patients", value: "1,284", color: "#1565C0" }, { label: "Recovery Rate", value: "76%", color: "#43A047" }].map(s => (
+              {[
+                { label: "OPD cases (7d)", value: formatInt(home?.signals.opd_cases_7d), color: "#1565C0" },
+                { label: `${TASK_META.m1.short} score (hospital unit)`, value: formatScore(unitScore(home, "m1")), color: "#0D1F1A" },
+                { label: "Units in review (all)", value: String(counts.review), color: "#E53935" },
+                { label: "Units on watch (all)", value: String(counts.watch), color: "#FB8C00" },
+              ].map(s => (
                 <div key={s.label} className="flex items-center justify-between">
                   <span className="text-xs text-gray-600">{s.label}</span>
                   <span className="font-mono font-bold text-sm" style={{ color: s.color }}>{s.value}</span>
                 </div>
               ))}
             </div>
+            <p className="mt-3 text-[10px] text-gray-400">Week of {formatWeek(board?.date)} · saved synthetic run</p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <h4 className="font-display font-bold text-[#0D1F1A] mb-3 text-sm">Clinical Protocols</h4>
+            <h4 className="font-display font-bold text-[#0D1F1A] mb-3 text-sm">Quick Protocols</h4>
             <div className="space-y-2">
-              {[{ icon: "ðŸ¦ ", label: "Cholera Treatment â†’", color: "#E53935" }, { icon: "ðŸ¤’", label: "Typhoid Management â†’", color: "#FB8C00" }, { icon: "ðŸ’§", label: "Dehydration Protocol â†’", color: "#1565C0" }, { icon: "ðŸ¥", label: "Isolation Guidelines â†’", color: "#43A047" }].map(p => (
-                <button key={p.label} onClick={() => send("ðŸ¦  Cholera protocol?")}
+              {[{ icon: "🦠", label: "Cholera response →", color: "#E53935", q: "🦠 Cholera protocol?" }, { icon: "💧", label: "Water inputs this week →", color: "#1565C0", q: "💧 Water inputs?" }, { icon: "📋", label: "Draft situation note →", color: "#43A047", q: "📋 Situation note?" }].map(p => (
+                <button key={p.label} onClick={() => send(p.q)}
                   className="w-full flex items-center gap-2.5 py-2 px-3 rounded-xl text-left text-xs font-semibold hover:bg-gray-50 transition-colors border border-gray-100" style={{ color: p.color }}>
                   <span>{p.icon}</span>{p.label}
                 </button>
@@ -152,9 +203,9 @@ export default function HospChat() {
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <h4 className="font-display font-bold text-[#0D1F1A] mb-3 text-sm">Emergency Contacts</h4>
+            <h4 className="font-display font-bold text-[#0D1F1A] mb-3 text-sm">Contacts (demo placeholders)</h4>
             <div className="space-y-2.5">
-              {[{ icon: "ðŸ›ï¸", label: "District Health Officer", number: "0361-2XX-XXXX" }, { icon: "ðŸ¥", label: "NHM Assam", number: "1800-XXX-XXXX" }, { icon: "ðŸš‘", label: "Ambulance", number: "108" }].map(c => (
+              {[{ icon: "🏛️", label: "District Health Officer", number: "044-XXXX-XXXX" }, { icon: "🆘", label: "State Health Helpline", number: "104" }, { icon: "🚑", label: "Ambulance", number: "108" }].map(c => (
                 <div key={c.label} className="flex items-center justify-between">
                   <div className="flex items-center gap-2"><span>{c.icon}</span><span className="text-xs font-medium text-[#0D1F1A]">{c.label}</span></div>
                   <span className="text-xs font-mono text-[#1565C0] font-semibold">{c.number}</span>
