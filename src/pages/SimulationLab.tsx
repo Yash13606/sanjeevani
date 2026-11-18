@@ -218,6 +218,12 @@ export default function SimulationLab() {
             These scores come from simulated test worlds and do not describe a current district or a real health alert.
           </p>
           <p className="mt-5 text-xs text-white/60">Local run: {status?.run_id ?? "none available"}</p>
+          <Link
+            to="/ml-whatif"
+            className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#2ED8A3] px-5 py-2 text-sm font-bold text-[#0D1F1A] hover:bg-[#6EE7B7]"
+          >
+            <FlaskConical className="h-4 w-4" /> Try the What-if lab: change signals and re-score
+          </Link>
         </header>
 
         <section className="mt-6 rounded-2xl border border-[#DCE7E0] bg-white p-6" aria-live="polite">

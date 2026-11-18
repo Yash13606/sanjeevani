@@ -160,6 +160,93 @@ def _infer_from_generated_row(run: Path, query: dict[str, list[str]]) -> dict:
     }
 
 
+@functools.lru_cache(maxsize=4)
+def _load_model(path: str, mtime_ns: int):
+    import joblib
+    return joblib.load(path)
+
+
+def _whatif(run: Path, query: dict[str, list[str]]) -> dict:
+    """Re-score one generated test row after the user changes some weekly signals (what-if, synthetic only).
+
+    Only the weekly signals in SIGNAL_COLUMNS can be changed; every other model input keeps its saved value.
+    A value of "nan" marks a signal as missing (for example a sensor that is offline).
+    """
+    import pandas as pd
+
+    task = (_query_value(query, "task", "") or "").lower()
+    scenario = _query_value(query, "scenario", "") or ""
+    unit_id = _query_value(query, "unit_id", "") or ""
+    date = _query_value(query, "date", "") or ""
+    if task not in {"m1", "m2"}:
+        raise ValueError("task must be m1 or m2")
+    if not SAFE_ID.fullmatch(unit_id) or not DATE_PATTERN.fullmatch(date):
+        raise ValueError("unit_id or date is invalid")
+    manifest = _read_json(run / "results" / "run_manifest.json")
+    if scenario not in manifest.get("scenario_names", []):
+        raise ValueError("Unknown surveillance scenario")
+    tests = manifest.get("split_seeds", {}).get("test", [])
+    world_id = _query_value(query, "world_id") or (f"world_{tests[0]}" if tests else "")
+    match = re.fullmatch(r"world_([0-9]{1,8})", world_id)
+    if not match or int(match.group(1)) not in tests:
+        raise ValueError("Only saved test worlds can be used")
+    cohort_path = run / "ml_datasets" / "worlds" / "test" / f"world_{match.group(1)}_{scenario}.csv.gz"
+    if not cohort_path.is_file():
+        raise FileNotFoundError("Generated test cohort is unavailable")
+    model_paths = list((run / "models").rglob(f"{task}.joblib"))
+    if len(model_paths) != 1:
+        raise FileNotFoundError("Expected one saved model artifact for this task")
+    meta = _model_meta(run, task)
+    features = _read_json(model_paths[0].parent / "manifest.json").get("models", {}).get(task, {}).get("feature_columns", [])
+    if not features:
+        raise ValueError("Model feature contract is missing")
+    editable = [c for c in SIGNAL_COLUMNS if c in features]
+
+    columns = ("unit_id", "date", "in_m1_risk_set", *features)
+    cohort = _cached_frame(cohort_path, columns)
+    rows = cohort.loc[(cohort["unit_id"] == unit_id) & (cohort["date"].astype(str).str[:10] == date)]
+    if len(rows) != 1:
+        raise ValueError("No unique generated feature row for that unit/date")
+    row = rows.iloc[[0]][list(features)].astype(float).copy()
+    base_row = row.copy()
+
+    overrides: dict[str, float | None] = {}
+    for name in editable:
+        raw = _query_value(query, name)
+        if raw is None or raw == "":
+            continue
+        if raw.lower() == "nan":
+            overrides[name] = None
+            row.loc[:, name] = float("nan")
+            continue
+        value = _number(raw)
+        if value is None or abs(value) > 1e7:
+            raise ValueError(f"{name} must be a finite number")
+        overrides[name] = value
+        row.loc[:, name] = value
+
+    model = _load_model(str(model_paths[0]), model_paths[0].stat().st_mtime_ns)
+    base_score = float(model.predict_proba(base_row[list(features)])[:, 1][0])
+    score = float(model.predict_proba(row[list(features)])[:, 1][0])
+    signals = []
+    for name in editable:
+        column = cohort[name].astype(float)
+        value = _number(base_row.iloc[0][name])
+        signals.append({
+            "name": name, "saved": value, "current": None if (name in overrides and overrides[name] is None) else overrides.get(name, value),
+            "min": _clean(column.min()), "max": _clean(column.max()), "median": _clean(column.median()),
+        })
+    return {
+        "synthetic": True, "source": "saved_model_what_if", "task": task, "world_id": world_id, "scenario": scenario,
+        "unit_id": unit_id, "date": date, "model_name": meta["model_name"],
+        "in_risk_set": bool(int(rows.iloc[0]["in_m1_risk_set"]) == 1) if task == "m1" else True,
+        "thresholds": {"review": meta["f1_threshold"], "watch": meta["recall_threshold"]},
+        "saved_score": base_score, "saved_tier": _tier(base_score, meta["f1_threshold"], meta["recall_threshold"]),
+        "score": score, "tier": _tier(score, meta["f1_threshold"], meta["recall_threshold"]),
+        "changed": sorted(overrides), "signals": signals,
+    }
+
+
 # ─── Weekly board: the contract the React dashboards read ────────────────────
 # Everything below is derived from files an already-completed synthetic run wrote
 # (saved test-world scores, the generated test cohort and the saved model manifest).
@@ -512,6 +599,7 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path not in {
             "/api/ml/status", "/api/ml/summary", "/api/ml/predictions", "/api/ml/infer",
             "/api/ml/units", "/api/ml/weeks", "/api/ml/board", "/api/ml/history", "/api/ml/clusters",
+            "/api/ml/whatif",
         }:
             self._send(404, {"error": "Unknown endpoint", "synthetic": True})
             return
@@ -538,6 +626,14 @@ class Handler(BaseHTTPRequestHandler):
 
         results = run / "results"
         try:
+            if parsed.path == "/api/ml/whatif":
+                try:
+                    self._send(200, _whatif(run, parse_qs(parsed.query)))
+                except ValueError as exc:
+                    self._send(400, {"error": str(exc), "synthetic": True})
+                except FileNotFoundError as exc:
+                    self._send(503, {"error": str(exc), "synthetic": True})
+                return
             if parsed.path == "/api/ml/infer":
                 try:
                     self._send(200, _infer_from_generated_row(run, parse_qs(parsed.query)))

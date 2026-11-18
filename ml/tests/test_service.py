@@ -233,3 +233,51 @@ def test_any_local_port_is_allowed_but_no_other_origin():
         assert _origin_allowed(origin), origin
     for origin in ("https://example.com", "http://evil.localhost:8080", "http://localhost.evil.com", "http://192.168.1.5:8080", None, ""):
         assert not _origin_allowed(origin), origin
+
+
+def test_whatif_rescores_a_row_with_changed_signals(tmp_path: Path):
+    run = tmp_path / "whatif-test"
+    results = run / "results"
+    results.mkdir(parents=True)
+    (results / "run_manifest.json").write_text(json.dumps({"run_id": "whatif-test", "synthetic": True, "split_seeds": {"test": [3001]}, "scenario_names": ["baseline"]}), encoding="utf-8")
+    (results / "benchmark_metrics_summary.csv").write_text("Task,Model,Scenario,Split,Selected\n", encoding="utf-8")
+    _write_gz_csv(run / "ml_datasets" / "worlds" / "test" / "world_3001_baseline.csv.gz", ["unit_id", "date", "rain_7d", "in_m1_risk_set"],
+                  [{"unit_id": "TN_01", "date": "2021-01-04", "rain_7d": 3, "in_m1_risk_set": 1},
+                   {"unit_id": "TN_01", "date": "2021-01-11", "rain_7d": 0, "in_m1_risk_set": 1}])
+    model_dir = run / "models" / "v3" / "whatif-test"
+    model_dir.mkdir(parents=True)
+    model = LogisticRegression().fit(pd.DataFrame({"rain_7d": [0, 1, 2, 3]}), [0, 0, 1, 1])
+    joblib.dump(model, model_dir / "m1.joblib")
+    (model_dir / "manifest.json").write_text(json.dumps({
+        "data_type": "synthetic simulation", "run_id": "whatif-test",
+        "models": {"m1": {"feature_columns": ["rain_7d"], "model_name": "test logistic",
+                          "validation_f1_threshold": 0.6, "validation_target_recall_threshold": 0.3}},
+    }), encoding="utf-8")
+    Handler.run_dir = run
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = "/api/ml/whatif?task=m1&scenario=baseline&unit_id=TN_01&date=2021-01-04"
+    try:
+        status, _, same = _get(server, base)
+        assert status == 200 and same["synthetic"] is True and same["changed"] == []
+        assert same["score"] == same["saved_score"] and same["tier"] == "review"
+        assert same["signals"][0]["name"] == "rain_7d" and same["signals"][0]["saved"] == 3
+
+        status, _, dry = _get(server, base + "&rain_7d=0")
+        assert status == 200 and dry["changed"] == ["rain_7d"]
+        assert dry["saved_score"] == same["saved_score"] and dry["score"] < dry["saved_score"] and dry["tier"] != "review"
+        assert abs(dry["score"] - model.predict_proba(pd.DataFrame({"rain_7d": [0]}))[0, 1]) < 1e-12
+
+        assert _get(server, base + "&rain_7d=abc")[0] == 400                       # not a number
+        assert _get(server, base + "&rain_7d=1e99")[0] == 400                      # absurd value
+        assert _get(server, base.replace("TN_01", "TN_99"))[0] == 400              # no such row
+        assert _get(server, base.replace("task=m1", "task=m3"))[0] == 400
+        assert _get(server, base.replace("baseline", "live"))[0] == 400
+        status, _, ignored = _get(server, base + "&not_a_signal=5")                # only weekly signals can be changed
+        assert status == 200 and ignored["changed"] == []
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+        Handler.run_dir = None

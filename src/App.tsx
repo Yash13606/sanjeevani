@@ -11,6 +11,7 @@ import CitizenDashboard from "./pages/dashboards/CitizenDashboard.tsx";
 import AshaDashboard from "./pages/dashboards/AshaDashboard.tsx";
 import HospitalDashboard from "./pages/dashboards/HospitalDashboard.tsx";
 import SimulationLab from "./pages/SimulationLab.tsx";
+import WhatIfLab from "./pages/WhatIfLab.tsx";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/dashboard/asha" element={<AshaDashboard />} />
             <Route path="/dashboard/hospital" element={<HospitalDashboard />} />
             <Route path="/ml-lab" element={<SimulationLab />} />
+            <Route path="/ml-whatif" element={<WhatIfLab />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
